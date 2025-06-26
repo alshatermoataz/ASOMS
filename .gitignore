@@ -1,0 +1,14 @@
+# Node/Vite/Vue
+asoms-frontend/node_modules/
+asoms-frontend/dist/
+
+# .NET
+**/bin/
+**/obj/
+.vs/
+
+# OS/editor junk
+*.DS_Store
+*.user
+*.suo
+.idea/
