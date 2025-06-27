@@ -7,7 +7,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 
-# Copy project files
+# Copy csproj files
 COPY ["ASOMS.Cms/ASOMS.Cms.csproj", "ASOMS.Cms/"]
 COPY ["ASOMS.DAL/ASOMS.DAL.csproj", "ASOMS.DAL/"]
 COPY ["ASOMS.Core/ASOMS.Core.csproj", "ASOMS.Core/"]
@@ -15,21 +15,21 @@ COPY ["ASOMS.Core/ASOMS.Core.csproj", "ASOMS.Core/"]
 # Restore dependencies
 RUN dotnet restore "ASOMS.Cms/ASOMS.Cms.csproj"
 
-# Copy all source files
+# Copy entire source
 COPY . .
 
-# Build the project
+# Build the application
 WORKDIR "/src/ASOMS.Cms"
 RUN dotnet build "ASOMS.Cms.csproj" -c Release -o /app/build
 
-# Publish the app
+# Publish the application
 FROM build AS publish
 RUN dotnet publish "ASOMS.Cms.csproj" -c Release -o /app/publish
 
-# Final runtime image
+# Create final image
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Start the app
+# Set the entrypoint
 ENTRYPOINT ["dotnet", "ASOMS.Cms.dll"]
