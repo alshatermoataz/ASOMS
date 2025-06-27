@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 string[] allowedOrigins = new[]
 {
     "http://localhost:5173",
-    "https://your-vercel-domain.vercel.app"
+    "https://asoms.vercel.app"
 };
 
 builder.Services.AddCors(options =>
