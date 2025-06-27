@@ -634,7 +634,7 @@ export default {
       image: null,
     });
 
-    const API_BASE_URL = "https://localhost:7004";
+    const API_BASE_URL = "https://asoms-production.up.railway.app";
 
     // Methods
     const toggleSidebar = () => {

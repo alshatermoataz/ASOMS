@@ -1371,7 +1371,7 @@ export default {
   name: "ProductsPage",
   setup() {
     // API base URL
-    const apiBaseUrl = "https://localhost:7004";
+    const apiBaseUrl = "https://asoms-production.up.railway.app";
 
     // State variables
     const products = ref([]);

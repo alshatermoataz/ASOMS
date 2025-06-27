@@ -57,7 +57,7 @@
           >
             <div class="item-image">
               <img
-                :src="`https://localhost:7004${item.imageUrl}`"
+                :src="`https://asoms-production.up.railway.app${item.imageUrl}`"
                 :alt="item.name"
                 @error="handleImageError($event)"
               />
@@ -556,7 +556,7 @@ const placeOrder = async () => {
 
     // Send order to the API
     const response = await axios.post(
-      "https://localhost:7004/api/orders",
+      "https://asoms-production.up.railway.app/api/orders",
       orderDto,
       {
         headers: {

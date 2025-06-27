@@ -101,7 +101,7 @@
               >
                 <div class="item-image">
                   <img
-                    :src="`https://localhost:7004${item.productImage}`"
+                    :src="`https://asoms-production.up.railway.app${item.productImage}`"
                     :alt="item.productName"
                     @error="handleImageError($event)"
                   />
@@ -213,7 +213,7 @@ const fetchOrders = async () => {
   try {
     // Fetch orders from API
     const response = await axios.get(
-      `https://localhost:7004/api/orders/user/${auth.user?.id}`,
+      `https://asoms-production.up.railway.app/api/orders/user/${auth.user?.id}`,
       {
         headers: {
           Authorization: `Bearer ${auth.token}`,

@@ -699,7 +699,7 @@ ChartJS.register(
   ArcElement
 );
 
-const API_BASE = "https://localhost:7004";
+const API_BASE = "https://asoms-production.up.railway.app";
 
 export default {
   name: "AnalyticsPage",

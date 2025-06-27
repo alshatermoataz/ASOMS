@@ -944,7 +944,7 @@ export default {
       return pages;
     });
 
-    const API_URL = "https://localhost:7004/api/orders";
+    const API_URL = "https://asoms-production.up.railway.app/api/orders";
 
     const loadOrderStatuses = async () => {
       try {

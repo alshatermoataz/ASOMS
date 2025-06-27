@@ -6,77 +6,82 @@
         <span>Π</span>
       </div>
     </div>
-    
+
     <div class="login-container">
       <div class="logo-small">
         <span>B</span>
       </div>
-      
-      <h1 class="welcome-text">Welcome<br>Back!</h1>
-      
+
+      <h1 class="welcome-text">Welcome<br />Back!</h1>
+
       <form class="login-form" @submit.prevent="handleLogin">
         <div class="form-group">
           <label for="email" class="input-label">Email</label>
-          <input 
-            type="email" 
-            id="email" 
-            class="input-field" 
-            v-model="email" 
+          <input
+            type="email"
+            id="email"
+            class="input-field"
+            v-model="email"
             required
           />
         </div>
-        
+
         <div class="form-group">
           <label for="password" class="input-label">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            class="input-field" 
-            v-model="password" 
+          <input
+            type="password"
+            id="password"
+            class="input-field"
+            v-model="password"
             required
           />
         </div>
 
         <p v-if="error" class="text-red-500 text-sm">{{ error }}</p>
-        
+
         <button type="submit" class="btn-primary">
           Sign in
           <font-awesome-icon icon="arrow-right" class="ml-2" />
         </button>
       </form>
-      
+
       <router-link to="/" class="back-link">Back</router-link>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import axios from 'axios'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import axios from "axios";
 
-const email = ref('')
-const password = ref('')
-const error = ref('')
-const router = useRouter()
-const auth = useAuthStore()
+const email = ref("");
+const password = ref("");
+const error = ref("");
+const router = useRouter();
+const auth = useAuthStore();
 
 const handleLogin = async () => {
-  error.value = ''
+  error.value = "";
   try {
-    const response = await axios.post('https://localhost:7004/api/auth/login', {
-      email: email.value,
-      password: password.value
-    })
+    const response = await axios.post(
+      "https://asoms-production.up.railway.app/api/auth/login",
+      {
+        email: email.value,
+        password: password.value,
+      }
+    );
 
-    const { token, user } = response.data
-    auth.login(user, token)
-    router.push('/home')
+    const { token, user } = response.data;
+    auth.login(user, token);
+    router.push("/home");
   } catch (err) {
-    error.value = err.response?.data?.message || 'Login failed. Please check your credentials.'
+    error.value =
+      err.response?.data?.message ||
+      "Login failed. Please check your credentials.";
   }
-}
+};
 </script>
 
 <style scoped>

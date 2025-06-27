@@ -118,7 +118,7 @@ console.log("Products: ", products);
 const fetchProducts = async () => {
   try {
     const res = await axios.get(
-      "https://localhost:7004/api/product?pageSize=100"
+      "https://asoms-production.up.railway.app/api/product?pageSize=100"
     );
     const productData = res.data.items || res.data || [];
     products.value = productData.sort(
@@ -130,7 +130,9 @@ const fetchProducts = async () => {
 };
 
 const fullImageUrl = (path) =>
-  path?.startsWith("http") ? path : `https://localhost:7004${path}`;
+  path?.startsWith("http")
+    ? path
+    : `https://asoms-production.up.railway.app${path}`;
 
 const filteredProducts = computed(() => {
   return products.value.filter((p) => {

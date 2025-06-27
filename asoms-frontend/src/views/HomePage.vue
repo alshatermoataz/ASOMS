@@ -105,7 +105,7 @@ const router = useRouter();
 const userName = auth.user?.fullName?.trim() || "Guest";
 const profilePicture =
   auth.user?.profilePictureUrl || "https://i.ibb.co/nPRRbJ5/ghost-icon.png";
-const API_BASE = "https://localhost:7004";
+const API_BASE = "https://asoms-production.up.railway.app";
 
 const hotProducts = ref([]);
 

@@ -1423,7 +1423,7 @@ export default {
     const newCustomersCount = ref(0);
     const avgOrdersPerCustomer = ref("0");
 
-    const API_BASE = "https://localhost:7004";
+    const API_BASE = "https://asoms-production.up.railway.app";
 
     const filters = ref({
       role: "",
@@ -1570,7 +1570,7 @@ export default {
             let recentOrders = [];
             try {
               const recentOrdersResponse = await axios.get(
-                `https://localhost:7004/api/orders/user/${user.id}`
+                `https://asoms-production.up.railway.app/api/orders/user/${user.id}`
               );
               recentOrders = Array.isArray(recentOrdersResponse.data)
                 ? recentOrdersResponse.data

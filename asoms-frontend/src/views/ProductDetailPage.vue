@@ -6,7 +6,7 @@
         <span>Π</span>
       </div>
     </div>
-    
+
     <!-- Fixed Back Button -->
     <div class="header-nav">
       <div class="back-button" @click="goBack">
@@ -14,44 +14,48 @@
       </div>
       <div class="header-title">Product Details</div>
     </div>
-    
+
     <!-- Loading State -->
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
       <p>Loading product...</p>
     </div>
-    
+
     <!-- Error State -->
     <div v-else-if="error" class="error-container">
       <font-awesome-icon icon="exclamation-circle" class="error-icon" />
       <p>{{ errorMessage }}</p>
       <button @click="fetchProduct" class="btn-primary retry-btn">Retry</button>
     </div>
-    
+
     <!-- Product Detail -->
     <div v-else-if="product" class="product-detail">
       <!-- Product Image Gallery -->
       <div class="product-image-gallery">
         <div class="main-image-container">
-          <img 
-            :src="fullImageUrl" 
-            :alt="product.name" 
-            class="product-detail-image" 
+          <img
+            :src="fullImageUrl"
+            :alt="product.name"
+            class="product-detail-image"
             @error="handleImageError"
           />
           <div v-if="isOnSale" class="sale-badge">SALE</div>
         </div>
-        
+
         <!-- Thumbnail Images (if available) -->
         <div v-if="hasMultipleImages" class="image-thumbnails">
-          <div 
-            v-for="(image, index) in productImages" 
-            :key="index" 
+          <div
+            v-for="(image, index) in productImages"
+            :key="index"
             class="thumbnail-container"
             :class="{ active: currentImageIndex === index }"
             @click="selectImage(index)"
           >
-            <img :src="image" :alt="`${product.name} view ${index + 1}`" class="thumbnail-image" />
+            <img
+              :src="image"
+              :alt="`${product.name} view ${index + 1}`"
+              class="thumbnail-image"
+            />
           </div>
         </div>
       </div>
@@ -60,12 +64,16 @@
       <div class="product-info">
         <!-- Product Header - Removed favorite button -->
         <h2 class="product-detail-name">{{ product.name }}</h2>
-        
+
         <p class="product-detail-description">{{ product.description }}</p>
-        
+
         <div class="price-container">
-          <p class="product-detail-price">RM {{ formatPrice(product.price) }}</p>
-          <p v-if="isOnSale" class="original-price">RM {{ formatPrice(product.originalPrice) }}</p>
+          <p class="product-detail-price">
+            RM {{ formatPrice(product.price) }}
+          </p>
+          <p v-if="isOnSale" class="original-price">
+            RM {{ formatPrice(product.originalPrice) }}
+          </p>
         </div>
 
         <!-- Product Specifications -->
@@ -74,15 +82,15 @@
           <div class="specs-grid">
             <div class="spec-item">
               <span class="spec-label">Brand</span>
-              <span class="spec-value">{{ product.brand || 'N/A' }}</span>
+              <span class="spec-value">{{ product.brand || "N/A" }}</span>
             </div>
             <div class="spec-item">
               <span class="spec-label">Category</span>
-              <span class="spec-value">{{ product.category || 'N/A' }}</span>
+              <span class="spec-value">{{ product.category || "N/A" }}</span>
             </div>
             <div class="spec-item">
               <span class="spec-label">Size</span>
-              <span class="spec-value">{{ product.size || 'N/A' }}</span>
+              <span class="spec-value">{{ product.size || "N/A" }}</span>
             </div>
             <div class="spec-item">
               <span class="spec-label">In Stock</span>
@@ -97,10 +105,10 @@
         <div v-if="hasSizes" class="size-selection">
           <h3>Select Size</h3>
           <div class="size-options">
-            <button 
-              v-for="size in availableSizes" 
-              :key="size" 
-              class="size-option" 
+            <button
+              v-for="size in availableSizes"
+              :key="size"
+              class="size-option"
               :class="{ active: selectedSize === size }"
               @click="selectSize(size)"
             >
@@ -113,16 +121,16 @@
         <div class="quantity-section">
           <h3>Quantity</h3>
           <div class="quantity-selector">
-            <button 
-              @click="decreaseQuantity" 
+            <button
+              @click="decreaseQuantity"
               class="quantity-btn minus-btn"
               :disabled="quantity <= 1"
             >
               <span class="quantity-btn-text">−</span>
             </button>
             <span class="quantity-value">{{ quantity }}</span>
-            <button 
-              @click="increaseQuantity" 
+            <button
+              @click="increaseQuantity"
               class="quantity-btn plus-btn"
               :disabled="quantity >= product.quantity"
             >
@@ -132,34 +140,38 @@
         </div>
 
         <!-- Add to Cart Button -->
-        <button 
-          @click="addToCart" 
+        <button
+          @click="addToCart"
           class="btn-primary add-to-cart-btn"
           :disabled="!canAddToCart"
         >
           <font-awesome-icon icon="shopping-cart" class="btn-icon" />
           Add to cart
         </button>
-        
+
         <!-- Out of Stock Message -->
         <p v-if="product.quantity <= 0" class="out-of-stock-message">
-          <font-awesome-icon icon="exclamation-triangle" /> This product is currently out of stock
+          <font-awesome-icon icon="exclamation-triangle" /> This product is
+          currently out of stock
         </p>
       </div>
     </div>
-    
+
     <!-- Related Products -->
     <div v-if="product && relatedProducts.length > 0" class="related-products">
       <h3>You might also like</h3>
       <div class="related-products-grid">
-        <div 
-          v-for="relatedProduct in relatedProducts" 
-          :key="relatedProduct.id" 
+        <div
+          v-for="relatedProduct in relatedProducts"
+          :key="relatedProduct.id"
           class="related-product-card"
           @click="navigateToProduct(relatedProduct.id)"
         >
           <div class="related-product-image">
-            <img :src="`https://localhost:7004${relatedProduct.imageUrl}`" :alt="relatedProduct.name" />
+            <img
+              :src="`https://asoms-production.up.railway.app${relatedProduct.imageUrl}`"
+              :alt="relatedProduct.name"
+            />
           </div>
           <div class="related-product-info">
             <h4>{{ relatedProduct.name }}</h4>
@@ -168,15 +180,15 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Toast Notification -->
-    <div v-if="showToast" class="toast" :class="{ 'show': showToast }">
+    <div v-if="showToast" class="toast" :class="{ show: showToast }">
       <div class="toast-icon">
         <font-awesome-icon :icon="toastIcon" />
       </div>
       <div class="toast-message">{{ toastMessage }}</div>
-    </div>  
-    
+    </div>
+
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
       <router-link to="/home" class="bottom-nav-item">
@@ -196,14 +208,20 @@
         <span>Profile</span>
       </router-link>
       <!-- Floating Cart Button -->
-      <div v-if="cartStore.uniqueItemCount > 0" class="floating-cart-button" @click="goToCheckout">
+      <div
+        v-if="cartStore.uniqueItemCount > 0"
+        class="floating-cart-button"
+        @click="goToCheckout"
+      >
         <div class="cart-icon">
           <font-awesome-icon icon="shopping-bag" />
           <div class="cart-badge">{{ cartStore.uniqueItemCount }}</div>
         </div>
         <div class="cart-text">
           <span>View Cart</span>
-          <span class="cart-total">RM {{ formatPrice(cartStore.totalPrice) }}</span>
+          <span class="cart-total"
+            >RM {{ formatPrice(cartStore.totalPrice) }}</span
+          >
         </div>
       </div>
     </div>
@@ -211,119 +229,130 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import { useCartStore } from '../stores/useCartStore'
-import axios from 'axios'
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import { useCartStore } from "../stores/useCartStore";
+import axios from "axios";
 
-const route = useRoute()
-const router = useRouter()
-const auth = useAuthStore()
-const cartStore = useCartStore()
+const route = useRoute();
+const router = useRouter();
+const auth = useAuthStore();
+const cartStore = useCartStore();
 
 // State variables
-const product = ref(null)
-const fullImageUrl = ref('')
-const fallbackImageUrl = '/images/product-placeholder.png'
-const loading = ref(true)
-const error = ref(false)
-const errorMessage = ref('')
-const quantity = ref(1)
-const selectedSize = ref(null)
-const currentImageIndex = ref(0)
-const relatedProducts = ref([])
-const showToast = ref(false)
-const toastMessage = ref('')
-const toastIcon = ref('check-circle')
+const product = ref(null);
+const fullImageUrl = ref("");
+const fallbackImageUrl = "/images/product-placeholder.png";
+const loading = ref(true);
+const error = ref(false);
+const errorMessage = ref("");
+const quantity = ref(1);
+const selectedSize = ref(null);
+const currentImageIndex = ref(0);
+const relatedProducts = ref([]);
+const showToast = ref(false);
+const toastMessage = ref("");
+const toastIcon = ref("check-circle");
 
 // Computed properties
-const userName = computed(() => auth.user?.fullName || 'Guest')
+const userName = computed(() => auth.user?.fullName || "Guest");
 
 const isOnSale = computed(() => {
-  return product.value && 
-         product.value.originalPrice && 
-         product.value.price < product.value.originalPrice
-})
+  return (
+    product.value &&
+    product.value.originalPrice &&
+    product.value.price < product.value.originalPrice
+  );
+});
 
 const isLowStock = computed(() => {
-  return product.value && product.value.quantity <= 5 && product.value.quantity > 0
-})
+  return (
+    product.value && product.value.quantity <= 5 && product.value.quantity > 0
+  );
+});
 
 const canAddToCart = computed(() => {
-  return product.value && 
-         product.value.quantity > 0 && 
-         (!hasSizes.value || selectedSize.value)
-})
-console.log("can? " , canAddToCart)
+  return (
+    product.value &&
+    product.value.quantity > 0 &&
+    (!hasSizes.value || selectedSize.value)
+  );
+});
+console.log("can? ", canAddToCart);
 const hasSizes = computed(() => {
-  return product.value && 
-         product.value.sizes && 
-         product.value.sizes.length > 0
-})
+  return product.value && product.value.sizes && product.value.sizes.length > 0;
+});
 
 const availableSizes = computed(() => {
-  return hasSizes.value ? product.value.sizes : []
-})
+  return hasSizes.value ? product.value.sizes : [];
+});
 
 const hasMultipleImages = computed(() => {
-  return productImages.value.length > 1
-})
+  return productImages.value.length > 1;
+});
 
 const productImages = computed(() => {
-  if (!product.value) return [fallbackImageUrl]
-  
+  if (!product.value) return [fallbackImageUrl];
+
   // If product has additional images, use them
-  if (product.value.additionalImages && product.value.additionalImages.length > 0) {
+  if (
+    product.value.additionalImages &&
+    product.value.additionalImages.length > 0
+  ) {
     return [
-      `https://localhost:7004${product.value.imageUrl}`,
-      ...product.value.additionalImages.map(img => `https://localhost:7004${img}`)
-    ]
+      `https://asoms-production.up.railway.app${product.value.imageUrl}`,
+      ...product.value.additionalImages.map(
+        (img) => `https://asoms-production.up.railway.app${img}`
+      ),
+    ];
   }
-  
+
   // Otherwise just return the main image
-  return [`https://localhost:7004${product.value.imageUrl}`]
-})
+  return [`https://asoms-production.up.railway.app${product.value.imageUrl}`];
+});
 
 // Methods
 const fetchProduct = async () => {
-  loading.value = true
-  error.value = false
-  
+  loading.value = true;
+  error.value = false;
+
   try {
-    const id = route.params.id
-    console.log("Fetching product ID:", id)
-    
-    const response = await axios.get(`https://localhost:7004/api/product/${id}`)
-    product.value = response.data
-    
+    const id = route.params.id;
+    console.log("Fetching product ID:", id);
+
+    const response = await axios.get(
+      `https://asoms-production.up.railway.app/api/product/${id}`
+    );
+    product.value = response.data;
+
     // Set the full image URL
-    fullImageUrl.value = `https://localhost:7004${response.data.imageUrl}`
-    
+    fullImageUrl.value = `https://asoms-production.up.railway.app${response.data.imageUrl}`;
+
     // If product has sizes, select the first one by default
     if (hasSizes.value) {
-      selectedSize.value = availableSizes.value[0]
+      selectedSize.value = availableSizes.value[0];
     }
-    
+
     // Fetch related products
     // fetchRelatedProducts()
-    
-    loading.value = false
+
+    loading.value = false;
   } catch (err) {
-    console.error('Failed to fetch product:', err)
-    error.value = true
-    errorMessage.value = 'Failed to load product. Please try again.'
-    loading.value = false
+    console.error("Failed to fetch product:", err);
+    error.value = true;
+    errorMessage.value = "Failed to load product. Please try again.";
+    loading.value = false;
   }
-}
+};
 
 // const fetchRelatedProducts = async () => {
 //   if (!product.value) return
-  
+
 //   try {
 //     // Fetch related products based on category
-//     const response = await axios.get(`https://localhost:7004/api/product/category/${product.value.category}`)
-    
+//     const response = await axios.get(`https://asoms-production.up.railway.app/api/product/category/${product.value.category}`)
+
 //     // Filter out the current product and limit to 4 related products
 //     relatedProducts.value = response.data
 //       .filter(p => p.id !== product.value.id)
@@ -337,32 +366,32 @@ const fetchProduct = async () => {
 
 const handleImageError = () => {
   // If the image fails to load, use a fallback image
-  fullImageUrl.value = fallbackImageUrl
-}
+  fullImageUrl.value = fallbackImageUrl;
+};
 
 const increaseQuantity = () => {
   if (product.value && quantity.value < product.value.quantity) {
-    quantity.value++
+    quantity.value++;
   }
-}
+};
 
 const decreaseQuantity = () => {
   if (quantity.value > 1) {
-    quantity.value--
+    quantity.value--;
   }
-}
+};
 
 const selectSize = (size) => {
-  selectedSize.value = size
-}
+  selectedSize.value = size;
+};
 
 const selectImage = (index) => {
-  currentImageIndex.value = index
-  fullImageUrl.value = productImages.value[index]
-}
+  currentImageIndex.value = index;
+  fullImageUrl.value = productImages.value[index];
+};
 
 const addToCart = () => {
-  if (!canAddToCart.value) return
+  if (!canAddToCart.value) return;
 
   // Create the cart item
   const cartItem = {
@@ -371,54 +400,57 @@ const addToCart = () => {
     price: product.value.price,
     imageUrl: product.value.imageUrl,
     quantity: quantity.value,
-    size: selectedSize.value
-  }
+    size: selectedSize.value,
+  };
 
   // Add to cart using the cart store
-  cartStore.addToCart(cartItem)
+  cartStore.addToCart(cartItem);
 
   // Show success toast
   // showToastMessage('Added to bag successfully', 'shopping-bag')
 
   // Reset quantity
-  quantity.value = 1
-}
+  quantity.value = 1;
+};
 
-const showToastMessage = (message, icon = 'check-circle') => {
-  toastMessage.value = message
-  toastIcon.value = icon
-  showToast.value = true
-  
+const showToastMessage = (message, icon = "check-circle") => {
+  toastMessage.value = message;
+  toastIcon.value = icon;
+  showToast.value = true;
+
   // Hide toast after 3 seconds
   setTimeout(() => {
-    showToast.value = false
-  }, 3000)
-}
+    showToast.value = false;
+  }, 3000);
+};
 
 const formatPrice = (price) => {
-  return parseFloat(price).toFixed(2)
-}
+  return parseFloat(price).toFixed(2);
+};
 
 const navigateToProduct = (productId) => {
-  router.push(`/product/${productId}`)
-}
+  router.push(`/product/${productId}`);
+};
 
 const goBack = () => {
-  router.back()
-}
+  router.back();
+};
 
 const cartTotal = computed(() => {
-  return cartStore.items.reduce((total, item) => total + (item.price * item.quantity), 0)
-})
+  return cartStore.items.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+});
 
 const goToCheckout = () => {
-  router.push('/checkout')
-}
+  router.push("/checkout");
+};
 
 // Lifecycle hooks
 onMounted(() => {
-  fetchProduct()
-})
+  fetchProduct();
+});
 </script>
 
 <style scoped>
@@ -473,7 +505,8 @@ onMounted(() => {
 }
 
 /* Loading and Error States */
-.loading-container, .error-container {
+.loading-container,
+.error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -494,8 +527,12 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-icon {
@@ -657,7 +694,7 @@ onMounted(() => {
 }
 
 .low-stock {
-  color: #FFA500;
+  color: #ffa500;
 }
 
 /* Size Selection */

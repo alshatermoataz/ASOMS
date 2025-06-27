@@ -6,14 +6,18 @@
         <span>Π</span>
       </div>
     </div>
-    
+
     <!-- Profile Header -->
     <div class="profile-header">
       <div class="profile-cover"></div>
-      
+
       <div class="profile-avatar-container">
         <div class="profile-avatar" @click="triggerFileInput">
-          <img v-if="profileImage" :src=imageBase(profileImage) alt="Profile" />
+          <img
+            v-if="profileImage"
+            :src="imageBase(profileImage)"
+            alt="Profile"
+          />
           <div v-else class="profile-avatar-placeholder">
             {{ userInitials }}
           </div>
@@ -21,31 +25,31 @@
             <font-awesome-icon icon="camera" />
           </div>
         </div>
-        <input 
-          type="file" 
-          ref="fileInput" 
-          style="display: none" 
-          accept="image/*" 
+        <input
+          type="file"
+          ref="fileInput"
+          style="display: none"
+          accept="image/*"
           @change="onFileSelected"
         />
       </div>
-      
+
       <div class="profile-name-container">
         <h2 v-if="!isEditingName" @click="startEditName">{{ editableName }}</h2>
         <div v-else class="edit-name-container">
-          <input 
-            type="text" 
-            v-model="editableName" 
-            class="edit-name-input" 
+          <input
+            type="text"
+            v-model="editableName"
+            class="edit-name-input"
             ref="nameInput"
             @blur="saveName"
             @keyup.enter="saveName"
           />
         </div>
-        <p class="profile-email">{{ auth.user?.email || 'No email' }}</p>
+        <p class="profile-email">{{ auth.user?.email || "No email" }}</p>
       </div>
     </div>
-    
+
     <!-- Profile Stats -->
     <div class="profile-stats">
       <div class="stat-item">
@@ -61,84 +65,112 @@
         <span class="stat-label">Pending</span>
       </div>
     </div>
-    
+
     <!-- Profile Sections -->
     <div class="profile-sections">
       <!-- Account Section -->
       <div class="profile-section">
         <h3 class="section-title">Account</h3>
-        
+
         <div class="profile-menu-item" @click="toggleSection('personalInfo')">
           <div class="menu-item-icon">
             <font-awesome-icon icon="user" />
           </div>
           <div class="menu-item-text">Personal Information</div>
           <div class="menu-item-arrow">
-            <font-awesome-icon :icon="expandedSections.personalInfo ? 'chevron-up' : 'chevron-down'" />
+            <font-awesome-icon
+              :icon="
+                expandedSections.personalInfo ? 'chevron-up' : 'chevron-down'
+              "
+            />
           </div>
         </div>
-        
+
         <div v-if="expandedSections.personalInfo" class="profile-submenu">
           <div class="profile-form-group">
             <label>Full Name</label>
-            <input type="text" v-model="personalInfo.fullName" class="profile-input" />
+            <input
+              type="text"
+              v-model="personalInfo.fullName"
+              class="profile-input"
+            />
           </div>
           <div class="profile-form-group">
             <label>Phone Number</label>
-            <input type="tel" v-model="personalInfo.phone" class="profile-input" />
+            <input
+              type="tel"
+              v-model="personalInfo.phone"
+              class="profile-input"
+            />
           </div>
-          <button class="btn-primary save-btn" @click="savePersonalInfo" :disabled="isUpdating">
-            {{ isUpdating ? 'Saving...' : 'Save Changes' }}
+          <button
+            class="btn-primary save-btn"
+            @click="savePersonalInfo"
+            :disabled="isUpdating"
+          >
+            {{ isUpdating ? "Saving..." : "Save Changes" }}
           </button>
         </div>
-        
+
         <div class="profile-menu-item" @click="toggleSection('paymentMethods')">
           <div class="menu-item-icon">
             <font-awesome-icon icon="credit-card" />
           </div>
           <div class="menu-item-text">Payment Methods</div>
           <div class="menu-item-arrow">
-            <font-awesome-icon :icon="expandedSections.paymentMethods ? 'chevron-up' : 'chevron-down'" />
+            <font-awesome-icon
+              :icon="
+                expandedSections.paymentMethods ? 'chevron-up' : 'chevron-down'
+              "
+            />
           </div>
         </div>
-        
+
         <div v-if="expandedSections.paymentMethods" class="profile-submenu">
-          <div 
-            v-for="(method, index) in paymentMethods" 
+          <div
+            v-for="(method, index) in paymentMethods"
             :key="index"
             class="payment-method-item"
           >
             <div class="payment-method-icon">
-              <font-awesome-icon :icon="method.type === 'credit' ? 'credit-card' : 'money-bill'" />
+              <font-awesome-icon
+                :icon="method.type === 'credit' ? 'credit-card' : 'money-bill'"
+              />
             </div>
             <div class="payment-method-details">
               <div class="payment-method-name">{{ method.name }}</div>
               <div class="payment-method-info">{{ method.info }}</div>
             </div>
-            <div class="payment-method-default" v-if="method.isDefault">Default</div>
+            <div class="payment-method-default" v-if="method.isDefault">
+              Default
+            </div>
           </div>
-          
+
           <button class="btn-secondary add-payment-btn">
             <font-awesome-icon icon="plus" /> Add Payment Method
           </button>
         </div>
       </div>
-      
+
       <!-- Settings Section -->
       <div class="profile-section">
         <h3 class="section-title">Settings</h3>
-        
+
         <div class="profile-menu-item">
           <div class="menu-item-icon">
             <font-awesome-icon icon="bell" />
           </div>
           <div class="menu-item-text">Notifications</div>
           <div class="toggle-switch">
-            <input type="checkbox" id="notifications" v-model="settings.notifications" />
+            <input
+              type="checkbox"
+              id="notifications"
+              v-model="settings.notifications"
+            />
             <label for="notifications"></label>
           </div>
         </div>
-        
+
         <div class="profile-menu-item">
           <div class="menu-item-icon">
             <font-awesome-icon icon="moon" />
@@ -149,7 +181,7 @@
             <label for="darkMode"></label>
           </div>
         </div>
-        
+
         <div class="profile-menu-item">
           <div class="menu-item-icon">
             <font-awesome-icon icon="language" />
@@ -158,11 +190,11 @@
           <div class="menu-item-value">English</div>
         </div>
       </div>
-      
+
       <!-- Support Section -->
       <div class="profile-section">
         <h3 class="section-title">Support</h3>
-        
+
         <div class="profile-menu-item">
           <div class="menu-item-icon">
             <font-awesome-icon icon="question-circle" />
@@ -172,7 +204,7 @@
             <font-awesome-icon icon="chevron-right" />
           </div>
         </div>
-        
+
         <div class="profile-menu-item">
           <div class="menu-item-icon">
             <font-awesome-icon icon="headset" />
@@ -182,7 +214,7 @@
             <font-awesome-icon icon="chevron-right" />
           </div>
         </div>
-        
+
         <div class="profile-menu-item">
           <div class="menu-item-icon">
             <font-awesome-icon icon="file-alt" />
@@ -193,22 +225,26 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Logout Button -->
       <button class="btn-logout" @click="handleLogout" :disabled="isLoggingOut">
-        <font-awesome-icon icon="sign-out-alt" /> 
-        {{ isLoggingOut ? 'Logging out...' : 'Logout' }}
+        <font-awesome-icon icon="sign-out-alt" />
+        {{ isLoggingOut ? "Logging out..." : "Logout" }}
       </button>
     </div>
-    
+
     <!-- Success Toast -->
-    <div v-if="showToast" class="toast-message" :class="{ 'show': showToast }">
+    <div v-if="showToast" class="toast-message" :class="{ show: showToast }">
       <div class="toast-icon">
-        <font-awesome-icon :icon="toastType === 'success' ? 'check-circle' : 'exclamation-circle'" />
+        <font-awesome-icon
+          :icon="
+            toastType === 'success' ? 'check-circle' : 'exclamation-circle'
+          "
+        />
       </div>
       <div class="toast-text">{{ toastMessage }}</div>
     </div>
-    
+
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
       <router-link to="/home" class="bottom-nav-item">
@@ -232,225 +268,230 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { ref, computed, onMounted, nextTick, watch } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
-const auth = useAuthStore()
-const router = useRouter()
-const fileInput = ref(null)
-const nameInput = ref(null)
-const defaultAvatar = '/images/default-avatar.png'
-const API_BASE = 'https://localhost:7004'
+const auth = useAuthStore();
+const router = useRouter();
+const fileInput = ref(null);
+const nameInput = ref(null);
+const defaultAvatar = "/images/default-avatar.png";
+const API_BASE = "https://asoms-production.up.railway.app";
 
 // Loading states
-const isUpdating = ref(false)
-const isLoggingOut = ref(false)
+const isUpdating = ref(false);
+const isLoggingOut = ref(false);
 
-console.log("Auth first: " , auth.user)
+console.log("Auth first: ", auth.user);
 // Profile image with fallback
 const profileImage = computed(() => {
-  return auth.user?.profilePictureUrl || defaultAvatar
-})
+  return auth.user?.profilePictureUrl || defaultAvatar;
+});
 
-console.log("Profile Image: " , profileImage)
+console.log("Profile Image: ", profileImage);
 
 // Editable name
-const isEditingName = ref(false)
-const editableName = ref('')
+const isEditingName = ref(false);
+const editableName = ref("");
 
 // Order statistics (could be moved to a separate store later)
 const orderStats = ref({
   total: 12,
   completed: 8,
-  pending: 4
-})
+  pending: 4,
+});
 
 // Expanded sections
 const expandedSections = ref({
   personalInfo: false,
-  paymentMethods: false
-})
+  paymentMethods: false,
+});
 
 // Personal information - reactive to store changes
 const personalInfo = ref({
-  fullName: '',
-  phone: ''
-})
+  fullName: "",
+  phone: "",
+});
 
 // Payment methods
 const paymentMethods = ref([
   {
-    type: 'Invoice',
-    name: 'Invoice',
-    info: 'Take now, Pay later',
-    isDefault: false
+    type: "Invoice",
+    name: "Invoice",
+    info: "Take now, Pay later",
+    isDefault: false,
   },
   {
-    type: 'cash',
-    name: 'Cash on Pick-up',
-    info: 'Pay when you receive your order',
-    isDefault: true
-  }
-])
+    type: "cash",
+    name: "Cash on Pick-up",
+    info: "Pay when you receive your order",
+    isDefault: true,
+  },
+]);
 
 // Settings
 const settings = ref({
   notifications: true,
-  darkMode: true
-})
+  darkMode: true,
+});
 
 // Toast
-const showToast = ref(false)
-const toastMessage = ref('')
-const toastType = ref('success')
+const showToast = ref(false);
+const toastMessage = ref("");
+const toastType = ref("success");
 
 // Computed
 const userInitials = computed(() => {
-  if (!auth.user?.fullName) return 'U'
-  
-  const nameParts = auth.user.fullName.split(' ')
+  if (!auth.user?.fullName) return "U";
+
+  const nameParts = auth.user.fullName.split(" ");
   if (nameParts.length >= 2) {
-    return `${nameParts[0][0]}${nameParts[1][0]}`
+    return `${nameParts[0][0]}${nameParts[1][0]}`;
   }
-  return nameParts[0][0]
-})
+  return nameParts[0][0];
+});
 
 // Watch for auth.user changes to update local reactive data
-watch(() => auth.user, (newUser) => {
-  if (newUser) {
-    editableName.value = newUser.fullName || ''
-    personalInfo.value = {
-      fullName: newUser.fullName || '',
-      phone: newUser.contactNumber || '',
-      address: newUser.address || ''
+watch(
+  () => auth.user,
+  (newUser) => {
+    if (newUser) {
+      editableName.value = newUser.fullName || "";
+      personalInfo.value = {
+        fullName: newUser.fullName || "",
+        phone: newUser.contactNumber || "",
+        address: newUser.address || "",
+      };
     }
-  }
-}, { immediate: true, deep: true })
+  },
+  { immediate: true, deep: true }
+);
 
 // Methods
 const triggerFileInput = () => {
-  fileInput.value.click()
-}
+  fileInput.value.click();
+};
 
 const onFileSelected = async (event) => {
-  const file = event.target.files[0]
+  const file = event.target.files[0];
   if (file) {
     try {
       // Create a preview immediately for better UX
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
         // We can't directly update the computed, but we can show a preview
         // The actual update will happen through the store
-      }
-      reader.readAsDataURL(file)
-      
+      };
+      reader.readAsDataURL(file);
+
       // Upload to server through store
-      const formData = new FormData()
-      formData.append('profilePicture', file)
-      
+      const formData = new FormData();
+      formData.append("profilePicture", file);
+
       // You would need to add this method to your auth store
-      await auth.uploadProfilePicture(formData)
-      
-      showToastMessage('Profile picture updated successfully', 'success')
+      await auth.uploadProfilePicture(formData);
+
+      showToastMessage("Profile picture updated successfully", "success");
     } catch (error) {
-      console.error('Error uploading profile picture:', error)
-      showToastMessage('Failed to update profile picture', 'error')
+      console.error("Error uploading profile picture:", error);
+      showToastMessage("Failed to update profile picture", "error");
     }
   }
-}
+};
 
 const startEditName = () => {
-  isEditingName.value = true
+  isEditingName.value = true;
   nextTick(() => {
-    nameInput.value?.focus()
-  })
-}
+    nameInput.value?.focus();
+  });
+};
 
 const saveName = async () => {
   if (!editableName.value.trim()) {
-    showToastMessage('Name cannot be empty', 'error')
-    return
+    showToastMessage("Name cannot be empty", "error");
+    return;
   }
-  
+
   try {
-    isUpdating.value = true
-    await auth.updateUserName(editableName.value)
-    isEditingName.value = false
-    showToastMessage('Name updated successfully', 'success')
+    isUpdating.value = true;
+    await auth.updateUserName(editableName.value);
+    isEditingName.value = false;
+    showToastMessage("Name updated successfully", "success");
   } catch (error) {
-    console.error('Error updating name:', error)
-    showToastMessage('Failed to update name', 'error')
+    console.error("Error updating name:", error);
+    showToastMessage("Failed to update name", "error");
   } finally {
-    isUpdating.value = false
+    isUpdating.value = false;
   }
-}
+};
 
 const toggleSection = (section) => {
-  expandedSections.value[section] = !expandedSections.value[section]
-}
+  expandedSections.value[section] = !expandedSections.value[section];
+};
 
 const savePersonalInfo = async () => {
   if (!personalInfo.value.fullName.trim()) {
-    showToastMessage('Full name is required', 'error')
-    return
+    showToastMessage("Full name is required", "error");
+    return;
   }
-  
+
   try {
-    isUpdating.value = true
-    
+    isUpdating.value = true;
+
     // Update through store
     await auth.updateUserProfile({
       fullName: personalInfo.value.fullName,
       contactNumber: personalInfo.value.phone,
-      address: personalInfo.value.address
-    })
-    
+      address: personalInfo.value.address,
+    });
+
     // Update editable name
-    editableName.value = personalInfo.value.fullName
-    
-    showToastMessage('Personal information updated successfully', 'success')
-    expandedSections.value.personalInfo = false
+    editableName.value = personalInfo.value.fullName;
+
+    showToastMessage("Personal information updated successfully", "success");
+    expandedSections.value.personalInfo = false;
   } catch (error) {
-    console.error('Error updating personal info:', error)
-    showToastMessage('Failed to update personal information', 'error')
+    console.error("Error updating personal info:", error);
+    showToastMessage("Failed to update personal information", "error");
   } finally {
-    isUpdating.value = false
+    isUpdating.value = false;
   }
-}
+};
 
-const imageBase = (url) => url?.startsWith('http') ? url : `${API_BASE}${url}`
+const imageBase = (url) =>
+  url?.startsWith("http") ? url : `${API_BASE}${url}`;
 
-const showToastMessage = (message, type = 'success') => {
-  toastMessage.value = message
-  toastType.value = type
-  showToast.value = true
+const showToastMessage = (message, type = "success") => {
+  toastMessage.value = message;
+  toastType.value = type;
+  showToast.value = true;
   setTimeout(() => {
-    showToast.value = false
-  }, 3000)
-}
+    showToast.value = false;
+  }, 3000);
+};
 
 const handleLogout = async () => {
   try {
-    isLoggingOut.value = true
-    await auth.logout()
-    router.push('/login')
+    isLoggingOut.value = true;
+    await auth.logout();
+    router.push("/login");
   } catch (error) {
-    console.error('Error logging out:', error)
+    console.error("Error logging out:", error);
     // Still redirect to login even if the API call fails
-    auth.logout()
-    router.push('/login')
+    auth.logout();
+    router.push("/login");
   } finally {
-    isLoggingOut.value = false
+    isLoggingOut.value = false;
   }
-}
+};
 
 // Initialize data on component mount
 onMounted(async () => {
   // Restore auth state from localStorage if needed
-  auth.restore()
-  
+  auth.restore();
+
   // Fetch latest user data if logged in
   /*if (auth.isLoggedIn) {
     try {
@@ -462,7 +503,7 @@ onMounted(async () => {
     // Redirect to login if not authenticated
     router.push('/login')
   }*/
-})
+});
 </script>
 
 <style scoped>
@@ -628,7 +669,8 @@ onMounted(async () => {
   font-size: 16px;
 }
 
-.menu-item-arrow, .menu-item-value {
+.menu-item-arrow,
+.menu-item-value {
   color: #cccccc;
 }
 
@@ -651,7 +693,8 @@ onMounted(async () => {
   color: #cccccc;
 }
 
-.profile-input, .profile-textarea {
+.profile-input,
+.profile-textarea {
   background-color: var(--input-bg);
   border: none;
   border-radius: 8px;
@@ -744,7 +787,7 @@ onMounted(async () => {
   right: 0;
   bottom: 0;
   background-color: var(--input-bg);
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 34px;
 }
 
@@ -756,7 +799,7 @@ onMounted(async () => {
   left: 4px;
   bottom: 4px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 

@@ -60,7 +60,7 @@ export const useProductStore = defineStore('products', {
         
         let response
         try {
-          response = await axios.get('https://localhost:7004/api/product')
+          response = await axios.get('https://asoms-production.up.railway.app/api/product')
         } catch (err) {
         }
         
@@ -98,7 +98,7 @@ export const useProductStore = defineStore('products', {
         // Try both endpoints
         let response
         try {
-          response = await axios.get(`https://localhost:7004/api/product/${id}`)
+          response = await axios.get(`https://asoms-production.up.railway.app/api/product/${id}`)
         } catch (err) {
 
         }
