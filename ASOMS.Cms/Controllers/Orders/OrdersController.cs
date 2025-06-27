@@ -7,6 +7,7 @@ using ASOMS.DAL.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace ASOMS.Cms.Controllers.Orders
 {
@@ -36,10 +37,13 @@ namespace ASOMS.Cms.Controllers.Orders
                 return BadRequest("Invalid payment method.");
             }
 
-            if (!DateTime.TryParse(dto.PickupTime, out var parsedPickupTime))
+            if (!DateTime.TryParse(dto.PickupTime, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsedPickupTime))
             {
                 return BadRequest("Invalid pickup time format.");
             }
+
+            // Just to be 100% sure
+            parsedPickupTime = DateTime.SpecifyKind(parsedPickupTime, DateTimeKind.Utc);
 
 
             switch (paymentMethodEnum)
