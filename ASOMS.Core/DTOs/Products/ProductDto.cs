@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace ASOMS.Core.DTOs.Products
     // Models/ProductDto.cs - Make sure nullable properties are properly defined
     public class ProductDto
     {
+        [Column(TypeName = "uuid")]
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }

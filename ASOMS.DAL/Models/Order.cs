@@ -12,9 +12,11 @@ namespace ASOMS.DAL.Models
     public class Order
     {
         [Key]
+        [Column(TypeName = "uuid")]
         public Guid Id { get; set; }
 
         [Required]
+        [Column(TypeName = "uuid")]
         public Guid UserId { get; set; }
 
         [ForeignKey("UserId")]

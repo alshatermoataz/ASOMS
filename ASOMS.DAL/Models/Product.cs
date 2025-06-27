@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace ASOMS.DAL.Models
@@ -7,6 +8,7 @@ namespace ASOMS.DAL.Models
     public class Product
     {
         [Key]
+        [Column(TypeName = "uuid")]
         public Guid Id { get; set; }
 
         [Required]
