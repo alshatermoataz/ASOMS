@@ -11,10 +11,11 @@ using Microsoft.Extensions.FileProviders;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var allowedOrigin = builder.Environment.IsDevelopment()
-    ? "http://localhost:5173" // Allow all in dev
-    : "https://your-vercel-domain.vercel.app"; // ONLY your deployed frontend
-
+string[] allowedOrigins = new[]
+{
+    "http://localhost:5173",
+    "https://your-vercel-domain.vercel.app"
+};
 
 builder.Services.AddCors(options =>
 {
@@ -22,7 +23,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy
-                .WithOrigins(allowedOrigin)
+                .WithOrigins(allowedOrigins)
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
