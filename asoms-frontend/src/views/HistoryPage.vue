@@ -163,24 +163,7 @@
     </div>
 
     <!-- Bottom Navigation -->
-    <div class="bottom-nav">
-      <router-link to="/home" class="bottom-nav-item">
-        <font-awesome-icon icon="home" class="bottom-nav-icon" />
-        <span>Home</span>
-      </router-link>
-      <router-link to="/shop" class="bottom-nav-item active">
-        <font-awesome-icon icon="shopping-cart" class="bottom-nav-icon" />
-        <span>Shop</span>
-      </router-link>
-      <router-link to="/history" class="bottom-nav-item">
-        <font-awesome-icon icon="history" class="bottom-nav-icon" />
-        <span>History</span>
-      </router-link>
-      <router-link to="/profile" class="bottom-nav-item">
-        <font-awesome-icon icon="user" class="bottom-nav-icon" />
-        <span>Profile</span>
-      </router-link>
-    </div>
+    <BottomNavigation />
   </div>
 </template>
 
