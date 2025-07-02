@@ -13,7 +13,7 @@
         <div class="tire-icon"></div>
       </div>
       <h1 class="app-name">ASOMS</h1>
-      <p class="tagline">Choose your clothes at an ease</p>
+      <p class="tagline">Choose your Car Products at an ease</p>
     </div>
 
     <div class="auth-buttons">
