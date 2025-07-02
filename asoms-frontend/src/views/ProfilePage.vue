@@ -235,7 +235,7 @@
       </div>
 
       <!-- Settings Section -->
-      <div class="profile-section">
+      <!-- <div class="profile-section">
         <h3 class="section-title">
           <i class="fas fa-cog"></i>
           Settings
@@ -295,10 +295,10 @@
             </select>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Support Section -->
-      <div class="profile-section">
+      <!-- <div class="profile-section">
         <h3 class="section-title">
           <i class="fas fa-life-ring"></i>
           Support
@@ -344,7 +344,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Logout Button -->
       <button class="btn-logout" @click="handleLogout" :disabled="isLoggingOut">
