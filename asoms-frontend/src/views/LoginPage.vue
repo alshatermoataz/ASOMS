@@ -1,11 +1,11 @@
 <template>
   <div class="page-container">
-    <div class="status-bar">
+    <!-- <div class="status-bar">
       <span>9:41</span>
       <div>
         <span>Π</span>
       </div>
-    </div>
+    </div> -->
 
     <div class="login-container">
       <div class="logo-small">
