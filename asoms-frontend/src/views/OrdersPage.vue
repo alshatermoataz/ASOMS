@@ -1061,20 +1061,46 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from "vue";
-import axios from "axios";
+import { ref, computed, onMounted, watch } from "vue";
+import { useOrderStore } from "../stores/useOrderStore";
 
 export default {
   name: "OrdersPage",
   setup() {
-    const orders = ref([]);
+    const orderStore = useOrderStore();
+    const isLoading = computed(() => orderStore.loading);
+    const orders = computed(() => orderStore.orders);
+    const totalOrders = computed(() => orderStore.totalItems);
+
+    const pendingOrders = computed(
+      () =>
+        orderStore.orders.filter((o) => o.status === "Pending Approval").length
+    );
+    const completedOrders = computed(
+      () => orderStore.orders.filter((o) => o.status === "Completed").length
+    );
+    const totalRevenue = computed(() =>
+      orderStore.orders
+        .reduce(
+          (sum, order) =>
+            sum +
+            (order.status === "Completed" ? parseFloat(order.totalAmount) : 0),
+          0
+        )
+        .toFixed(2)
+    );
+    const averageOrderValue = computed(() =>
+      completedOrders.value
+        ? (parseFloat(totalRevenue.value) / completedOrders.value).toFixed(2)
+        : "0.00"
+    );
+
     const selectedOrder = ref(null);
     const statusOrder = ref(null);
-    const isLoading = ref(false);
     const currentPage = ref(1);
     const totalPages = ref(1);
     const totalItems = ref(0);
-    const pageSize = ref(25);
+    const pageSize = ref(10);
     const viewMode = ref("table");
     const sortBy = ref("date-desc");
     const showDetailsModal = ref(false);
@@ -1083,22 +1109,6 @@ export default {
     const selectedOrders = ref([]);
     const selectAll = ref(false);
     const isSidebarCollapsed = ref(false);
-    const completedOrders = ref("0");
-
-    // Stats
-    const totalOrders = ref(0);
-    const pendingOrders = ref(0);
-    const totalRevenue = ref("0");
-    const averageOrderValue = ref("0");
-
-    // Status management
-    const availableStatuses = ref([
-      { value: "PendingApproval", display: "Pending Approval" },
-      { value: "Confirmed", display: "Confirmed" },
-      { value: "Rejected", display: "Rejected" },
-      { value: "Completed", display: "Completed" },
-    ]);
-    const selectedNewStatus = ref("");
     const statusNotes = ref("");
     const isUpdatingStatus = ref(false);
 
@@ -1145,19 +1155,7 @@ export default {
       isSidebarCollapsed.value = !isSidebarCollapsed.value;
     };
 
-    const API_URL = "https://asoms-production.up.railway.app/api/orders";
-
-    const loadOrderStatuses = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/statuses`);
-        availableStatuses.value = response.data;
-      } catch (error) {
-        console.error("Error loading order statuses:", error);
-      }
-    };
-
     const loadOrders = async (page = 1) => {
-      isLoading.value = true;
       currentPage.value = page;
       try {
         const params = {
@@ -1166,25 +1164,35 @@ export default {
           status: filters.value.status || undefined,
           paymentMethod: filters.value.paymentMethod || undefined,
           search: filters.value.search || undefined,
-          sort: sortBy.value || undefined, // ← add this line
+          sort: sortBy.value || undefined,
           dateRange: filters.value.dateRange || undefined,
-          minAmount: filters.value.minAmount || undefined, // ✅ Add this
+          minAmount: filters.value.minAmount || undefined,
           maxAmount: filters.value.maxAmount || undefined,
         };
 
         console.log("Params: ", params);
 
-        const response = await axios.get(API_URL, { params });
+        const response = await orderStore.fetchOrders(params);
 
+        // ✅ CORRECT - Access the right properties
         orders.value = response.data.data || [];
-        totalPages.value = response.data.totalPages || 1;
-        totalItems.value = response.data.totalItems || 0;
-        totalOrders.value = response.data.totalItems || 0;
+        totalPages.value = response.data.totalPages || 1; // ✅ Fixed
+        totalItems.value = response.data.totalItems || 0; // ✅ Fixed
+
+        console.warn("📊 PAGINATION DEBUG:");
+        console.warn("  - Pages:", totalPages.value);
+        console.warn("  - Items:", totalItems.value);
+        console.warn("  - Orders count:", orders.value.length);
+        console.warn("  - Current page:", currentPage.value);
+        console.warn("  - Full response structure:", response);
+
+        // Rest of your code...
         pendingOrders.value =
           orders.value.filter((o) => o.status === "Pending Approval").length ||
           0;
         completedOrders.value =
           orders.value.filter((o) => o.status === "Completed").length || 0;
+
         totalRevenue.value = orders.value
           .reduce(
             (sum, order) =>
@@ -1210,8 +1218,7 @@ export default {
         );
         orders.value = [];
         totalItems.value = 0;
-      } finally {
-        isLoading.value = false;
+        totalPages.value = 1;
       }
     };
 
@@ -1288,13 +1295,10 @@ export default {
 
       isUpdatingStatus.value = true;
       try {
-        const response = await axios.put(
-          `${API_URL}/${statusOrder.value.id}/status`,
-          {
-            status: selectedNewStatus.value,
-            notesToBuyer: statusNotes.value, // ← UPDATE THIS LINE
-          }
-        );
+        const response = await orderStore.updateStatus(statusOrder.value.id, {
+          status: selectedNewStatus.value,
+          notesToBuyer: statusNotes.value, // ← UPDATE THIS LINE
+        });
 
         if (response.data.success) {
           showMessage(response.data.message, "success");
@@ -1368,13 +1372,7 @@ export default {
       const orderIds = selectedOrders.map((order) => order.id);
 
       try {
-        const response = await axios.post(
-          `${API_URL}/download-invoices`, // Adjust if your base URL already includes `/orders`
-          orderIds,
-          {
-            responseType: "blob", // Ensure the file is treated as binary
-          }
-        );
+        const response = await orderStore.downloadInvoices(orderIds);
 
         const blob = new Blob([response.data], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
@@ -1409,11 +1407,7 @@ export default {
 
     const printInvoice = async (order) => {
       try {
-        const response = await axios.post(
-          `${API_URL}/download-invoices`,
-          [order.id], // still send as array
-          { responseType: "blob" }
-        );
+        const response = await orderStore.downloadInvoice(order.id);
 
         const blob = new Blob([response.data], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
@@ -1455,7 +1449,7 @@ export default {
         )
       ) {
         try {
-          await axios.delete(`${API_URL}/${order.id}`);
+          await orderStore.deleteOrder(order.id);
           showMessage(
             `Order #${formatOrderId(order.id)} deleted successfully!`,
             "success"
@@ -1544,14 +1538,20 @@ export default {
     };
 
     onMounted(() => {
-      loadOrders(1);
+      loadOrders();
+      orderStore.initSignalR();
     });
 
     return {
       orders,
+      isLoading,
+      totalOrders,
+      pendingOrders,
+      completedOrders,
+      totalRevenue,
+      averageOrderValue,
       selectedOrder,
       statusOrder,
-      isLoading,
       currentPage,
       totalPages,
       totalItems,
@@ -1564,12 +1564,6 @@ export default {
       selectedOrders,
       selectAll,
       isSidebarCollapsed,
-      totalOrders,
-      pendingOrders,
-      totalRevenue,
-      averageOrderValue,
-      availableStatuses,
-      selectedNewStatus,
       statusNotes,
       isUpdatingStatus,
       filters,

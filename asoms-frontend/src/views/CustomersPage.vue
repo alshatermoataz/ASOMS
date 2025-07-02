@@ -1395,6 +1395,7 @@
 <script>
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
+import { useProductStore } from "../stores/useProductStore";
 
 export default {
   name: "CustomersPage",
@@ -1955,8 +1956,11 @@ export default {
       }, 500);
     };
 
+    const productStore = useProductStore();
+
     onMounted(() => {
       loadCustomers(1);
+      productStore.initSignalR();
     });
 
     return {

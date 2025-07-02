@@ -32,6 +32,8 @@ builder.Services.AddCors(options =>
 
 
 builder.Services.AddControllers();
+// Register SignalR
+builder.Services.AddSignalR();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -85,6 +87,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+// Map the SignalR hub endpoint
+app.MapHub<ASOMS.Cms.Services.NotificationHub>("/hubs/notifications");
 
 
 using (var scope = app.Services.CreateScope())

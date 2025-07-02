@@ -1366,6 +1366,7 @@
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import debounce from "lodash/debounce";
+import { useProductStore } from "../stores/useProductStore";
 
 export default {
   name: "ProductsPage",
@@ -1383,7 +1384,7 @@ export default {
     const currentPage = ref(1);
     const totalPages = ref(1);
     const totalItems = ref(0);
-    const pageSize = ref(25);
+    const pageSize = ref(10);
     const viewMode = ref("table");
     const sortBy = ref("name-asc");
     const showDetailsModal = ref(false);
@@ -1454,6 +1455,8 @@ export default {
     const toggleSidebar = () => {
       isSidebarCollapsed.value = !isSidebarCollapsed.value;
     };
+
+    const productStore = useProductStore();
 
     // Load products from API
     const loadProducts = async (page = 1) => {
@@ -2057,6 +2060,7 @@ export default {
     // Load products on component mount
     onMounted(() => {
       loadProducts(1);
+      productStore.initSignalR();
     });
 
     return {

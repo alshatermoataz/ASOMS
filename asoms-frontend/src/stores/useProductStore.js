@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import { getCurrentInstance } from 'vue'
 
 export const useProductStore = defineStore('products', {
   state: () => ({
@@ -320,6 +321,32 @@ export const useProductStore = defineStore('products', {
         this.error = error.message || `Failed to update product`
         return null
       }
+    },
+    
+    initSignalR() {
+      const instance = getCurrentInstance()
+      const connection = instance?.appContext.config.globalProperties.$signalR
+      if (!connection) return
+
+      // Product updates
+      connection.on('ProductUpdated', async () => {
+        await this.fetchProducts(true)
+      })
+      // Order updates
+      connection.on('OrderUpdated', async () => {
+        await this.fetchOrders()
+      })
+      // Customer updates
+      connection.on('CustomerUpdated', async () => {
+        if (this.fetchCustomers) {
+          await this.fetchCustomers()
+        }
+      })
+    },
+    // Placeholder for customer fetching
+    async fetchCustomers() {
+      // Implement customer fetching logic or trigger a reload in the relevant view
+      // This is a placeholder to be replaced with actual logic if a customer store is added
     }
   }
 })

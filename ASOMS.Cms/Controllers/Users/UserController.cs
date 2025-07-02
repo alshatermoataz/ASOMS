@@ -8,13 +8,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.SignalR;
+using ASOMS.Cms.Services;
 
 namespace ASOMS.Cms.Controllers.Users;
 
 //[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/[controller]")]
-public class UsersController (CustomDbContext customDbContext) : ControllerBase
+public class UsersController(CustomDbContext customDbContext, IHubContext<NotificationHub> hubContext) : ControllerBase
 {
 
 
@@ -184,7 +186,7 @@ public class UsersController (CustomDbContext customDbContext) : ControllerBase
 
         using var sha256 = SHA256.Create();
         var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
-        var hashedPassword =  Convert.ToBase64String(hashedBytes);
+        var hashedPassword = Convert.ToBase64String(hashedBytes);
 
 
         var user = new User
@@ -205,12 +207,10 @@ public class UsersController (CustomDbContext customDbContext) : ControllerBase
         customDbContext.Users.Add(user);
         await customDbContext.SaveChangesAsync();
 
-        return Ok(new
-        {
-            success = true,
-            message = "Customer created successfully",
-            userId = user.Id
-        });
+        // Broadcast customer created event
+        await hubContext.Clients.All.SendAsync("CustomerUpdated", new { user.Id, user.FullName, user.Email });
+
+        return Ok(new { message = "Customer created successfully", user.Id });
     }
 
     [HttpPut("{id}")]
@@ -235,7 +235,10 @@ public class UsersController (CustomDbContext customDbContext) : ControllerBase
 
         await customDbContext.SaveChangesAsync();
 
-        return Ok(new { success = true, message = "User updated successfully" });
+        // Broadcast customer updated event
+        await hubContext.Clients.All.SendAsync("CustomerUpdated", new { user.Id, user.FullName, user.Email });
+
+        return Ok(new { message = "User updated successfully", user.Id });
     }
 
 

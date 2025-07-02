@@ -8,12 +8,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+using Microsoft.AspNetCore.SignalR;
+using ASOMS.Cms.Services;
 
 namespace ASOMS.Cms.Controllers.Orders
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class OrdersController(CustomDbContext customDbContext , IOrderService orderService) : ControllerBase
+    public class OrdersController(CustomDbContext customDbContext, IOrderService orderService, IHubContext<NotificationHub> hubContext) : ControllerBase
     {
 
         [HttpPost]
@@ -102,6 +104,9 @@ namespace ASOMS.Cms.Controllers.Orders
             customDbContext.Orders.Add(order);
             await customDbContext.SaveChangesAsync();
 
+            // Broadcast order created event
+            await hubContext.Clients.All.SendAsync("OrderUpdated", new { order.Id, order.TotalAmount, order.Status });
+
             return Ok(new { order.Id, order.TotalAmount, order.Status });
         }
 
@@ -122,7 +127,7 @@ namespace ASOMS.Cms.Controllers.Orders
                 PaymentMethod = o.PaymentMethod.GetDisplayName(), // Convert enum to readable string
                 o.TotalAmount,
                 o.CreatedAt,
-                o.PickupTime, 
+                o.PickupTime,
                 o.NotesToBuyer,
                 Items = o.Items.Select(i => new
                 {
@@ -131,7 +136,7 @@ namespace ASOMS.Cms.Controllers.Orders
                     ProductImage = i.Product.ImageUrl,
                     i.Quantity,
                     i.Price,
-                    
+
                     Total = i.Quantity * i.Price
                 })
             });
@@ -229,7 +234,8 @@ namespace ASOMS.Cms.Controllers.Orders
             var orders = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(o => new {
+                .Select(o => new
+                {
                     o.Id,
                     o.UserId,
                     UserFullName = o.User.FullName,
@@ -249,7 +255,7 @@ namespace ASOMS.Cms.Controllers.Orders
                             i.Product.Name
                         }
                     })
-                    })
+                })
                 .ToListAsync();
 
             return Ok(new

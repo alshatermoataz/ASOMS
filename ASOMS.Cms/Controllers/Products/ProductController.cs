@@ -5,12 +5,14 @@ using ASOMS.DAL.EntityFramework;
 using ASOMS.DAL.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using ASOMS.Cms.Services;
 
 namespace ASOMS.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductController (CustomDbContext customDbContext , IWebHostEnvironment env, IProductService _productService, ILogger<ProductService> _logger) : ControllerBase
+    public class ProductController(CustomDbContext customDbContext, IWebHostEnvironment env, IProductService _productService, ILogger<ProductService> _logger, IHubContext<NotificationHub> hubContext) : ControllerBase
     {
 
         // GET: api/product
@@ -42,41 +44,44 @@ namespace ASOMS.API.Controllers
         }
 
 
-            [HttpPost]
-            [Route("upload")]
-            public async Task<IActionResult> UploadProduct([FromForm] ProductUploadDto dto)
+        [HttpPost]
+        [Route("upload")]
+        public async Task<IActionResult> UploadProduct([FromForm] ProductUploadDto dto)
+        {
+            if (dto.Image == null || dto.Image.Length == 0)
+                return BadRequest("Image file is required.");
+
+            var imageFileName = Guid.NewGuid() + Path.GetExtension(dto.Image.FileName);
+            var imagePath = Path.Combine(env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", imageFileName);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(imagePath)!);
+
+            using (var stream = new FileStream(imagePath, FileMode.Create))
             {
-                if (dto.Image == null || dto.Image.Length == 0)
-                    return BadRequest("Image file is required.");
-
-                var imageFileName = Guid.NewGuid() + Path.GetExtension(dto.Image.FileName);
-                var imagePath = Path.Combine(env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", imageFileName);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(imagePath)!);
-
-                using (var stream = new FileStream(imagePath, FileMode.Create))
-                {
-                    await dto.Image.CopyToAsync(stream);
-                }
-
-                var product = new Product
-                {
-                    Id = Guid.NewGuid(),
-                    Name = dto.Name,
-                    Description = dto.Description,
-                    Brand = dto.Brand,
-                    Category = dto.Category,
-                    Size = dto.Size,
-                    Price = dto.Price,
-                    Quantity = dto.Quantity,
-                    ImageUrl = $"/uploads/{imageFileName}"
-                };
-
-                customDbContext.Products.Add(product);
-                await customDbContext.SaveChangesAsync();
-
-                return Ok(product);
+                await dto.Image.CopyToAsync(stream);
             }
+
+            var product = new Product
+            {
+                Id = Guid.NewGuid(),
+                Name = dto.Name,
+                Description = dto.Description,
+                Brand = dto.Brand,
+                Category = dto.Category,
+                Size = dto.Size,
+                Price = dto.Price,
+                Quantity = dto.Quantity,
+                ImageUrl = $"/uploads/{imageFileName}"
+            };
+
+            customDbContext.Products.Add(product);
+            await customDbContext.SaveChangesAsync();
+
+            // Broadcast product created event
+            await hubContext.Clients.All.SendAsync("ProductUpdated", product);
+
+            return Ok(product);
+        }
 
         [HttpPost("{id}/upload-image")]
         public async Task<IActionResult> UploadProductImage(Guid id, IFormFile image)
@@ -136,10 +141,13 @@ namespace ASOMS.API.Controllers
             try
             {
                 var result = await _productService.UpdateProductDetailsAsync(id, productDto);
-                
+
                 if (result == null)
                     return NotFound($"Product with ID {id} not found");
-                
+
+                // Broadcast product updated event
+                await hubContext.Clients.All.SendAsync("ProductUpdated", result);
+
                 return Ok(result);
             }
             catch (ArgumentException ex)
