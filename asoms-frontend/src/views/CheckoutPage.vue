@@ -1026,7 +1026,7 @@ onMounted(() => {
 
 .radio-wrapper input[type="radio"] {
   opacity: 0;
-  position: absolute;
+  /* position: absolute; */
   width: 20px;
   height: 20px;
   cursor: pointer;
@@ -1279,7 +1279,7 @@ onMounted(() => {
 
 .custom-checkbox input[type="checkbox"] {
   opacity: 0;
-  position: absolute;
+  /* position: absolute; */
   width: 20px;
   height: 20px;
   cursor: pointer;

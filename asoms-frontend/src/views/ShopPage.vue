@@ -79,7 +79,7 @@
       </div>
     </div>
 
-    <router-link :to="`/checkout`" class="btn-checkout">Checkout</router-link>
+    <!-- <router-link :to="`/checkout`" class="btn-checkout">Checkout</router-link> -->
 
     <!-- Bottom Navigation -->
     <BottomNavigation />
