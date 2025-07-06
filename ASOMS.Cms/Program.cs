@@ -19,7 +19,7 @@ string[] allowedOrigins = new[]
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
+    options.AddPolicy("allowedOrigins",
         policy =>
         {
             policy
