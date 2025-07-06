@@ -20,7 +20,7 @@
       <nav class="sidebar-menu">
         <ul>
           <li>
-            <router-link to="/admin/check" class="nav-item"
+            <router-link to="/admin/analytics" class="nav-item"
               ><i class="fas fa-tachometer-alt fa-fw"></i
               ><span v-if="!isSidebarCollapsed">Dashboard</span></router-link
             >
@@ -43,12 +43,12 @@
               ><span v-if="!isSidebarCollapsed">Products</span></router-link
             >
           </li>
-          <li>
+          <!-- <li>
             <a href="#" class="nav-item"
               ><i class="fas fa-chart-line fa-fw"></i
               ><span v-if="!isSidebarCollapsed">Analytics</span></a
             >
-          </li>
+          </li> -->
           <li>
             <a href="#" class="nav-item"
               ><i class="fas fa-cog fa-fw"></i
@@ -71,10 +71,10 @@
             </div>
           </div>
           <div class="navbar-right-main">
-            <button class="notification-btn">
+            <!-- <button class="notification-btn">
               <i class="fas fa-bell"></i>
               <span class="notification-badge">{{ newCustomersCount }}</span>
-            </button>
+            </button> -->
             <div class="user-profile-section">
               <img
                 src="../assets/placeholder.svg?width=40&height=40"
@@ -1424,7 +1424,7 @@ export default {
     const newCustomersCount = ref(0);
     const avgOrdersPerCustomer = ref("0");
 
-    const API_BASE = "https://asoms-production.up.railway.app";
+    const API_BASE = "https://localhost:7004";
 
     const filters = ref({
       role: "",

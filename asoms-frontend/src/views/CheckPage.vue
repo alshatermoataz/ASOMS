@@ -86,10 +86,10 @@
             </div>
           </div>
           <div class="navbar-right-main">
-            <button class="notification-btn" aria-label="Notifications">
+            <!-- <button class="notification-btn" aria-label="Notifications">
               <i class="fas fa-bell"></i>
               <span class="notification-badge">3</span>
-            </button>
+            </button> -->
             <div class="user-profile-section">
               <img src="" alt="Admin User" class="user-avatar" />
               <div class="user-details">

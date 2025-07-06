@@ -28,8 +28,27 @@ const connection = new signalR.HubConnectionBuilder()
   .withAutomaticReconnect()
   .build()
 
+// Add connection state logging
+connection.onreconnecting(error => {
+  console.log('SignalR: Reconnecting...', error);
+});
+
+connection.onreconnected(connectionId => {
+  console.log('SignalR: Reconnected. ConnectionId:', connectionId);
+});
+
+connection.onclose(error => {
+  console.log('SignalR: Connection closed.', error);
+});
+
 // Start the connection
-connection.start().catch(err => console.error('SignalR Connection Error:', err))
+connection.start()
+  .then(() => {
+    console.log('SignalR: Connected successfully. ConnectionId:', connection.connectionId);
+  })
+  .catch(err => {
+    console.error('SignalR Connection Error:', err);
+  });
 
 // Make the connection available globally
 app.config.globalProperties.$signalR = connection

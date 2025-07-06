@@ -20,7 +20,7 @@
       <nav class="sidebar-menu">
         <ul>
           <li>
-            <router-link to="/admin/check" class="nav-item"
+            <router-link to="/admin/analytics" class="nav-item"
               ><i class="fas fa-tachometer-alt fa-fw"></i
               ><span v-if="!isSidebarCollapsed">Dashboard</span></router-link
             >
@@ -41,12 +41,6 @@
             <router-link to="/admin/products" class="nav-item"
               ><i class="fas fa-box-open fa-fw"></i
               ><span v-if="!isSidebarCollapsed">Products</span></router-link
-            >
-          </li>
-          <li>
-            <router-link to="/admin/analytics" class="nav-item"
-              ><i class="fas fa-chart-line fa-fw"></i
-              ><span v-if="!isSidebarCollapsed">Analytics</span></router-link
             >
           </li>
           <li>
@@ -71,10 +65,6 @@
             </div>
           </div>
           <div class="navbar-right-main">
-            <button class="notification-btn">
-              <i class="fas fa-bell"></i>
-              <span class="notification-badge">{{ pendingOrders }}</span>
-            </button>
             <div class="user-profile-section">
               <img
                 src="../assets/placeholder.svg?width=40&height=40"
@@ -101,11 +91,12 @@
                   <i class="fas fa-shopping-cart"></i>
                 </div>
                 <div class="stat-content-container">
-                  <div class="stat-number">{{ totalOrders }}</div>
+                  <div class="stat-number">
+                    {{ orderStore.stats.totalOrders }}
+                  </div>
                   <div class="stat-label">Total Orders</div>
                   <div class="stat-trend positive">
                     <i class="fas fa-arrow-up"></i>
-                    <!-- <span>+12% this month</span> -->
                   </div>
                 </div>
               </div>
@@ -117,11 +108,13 @@
                   <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-content-container">
-                  <div class="stat-number">{{ pendingOrders }}</div>
+                  <div class="stat-number">
+                    {{ orderStore.stats.pendingOrders }}
+                  </div>
                   <div class="stat-label">Pending Orders</div>
                   <div class="stat-trend warning">
                     <i class="fas fa-exclamation-triangle"></i>
-                    <span>Needs attention</span>
+                    <span>Needs attention in this Page</span>
                   </div>
                 </div>
               </div>
@@ -133,11 +126,12 @@
                   <i class="fas fa-dollar-sign"></i>
                 </div>
                 <div class="stat-content-container">
-                  <div class="stat-number">${{ totalRevenue }}</div>
-                  <div class="stat-label">Total Revenue</div>
+                  <div class="stat-number">
+                    ${{ formatCurrency(orderStore.stats.totalRevenue) }}
+                  </div>
+                  <div class="stat-label">Page Total Revenue</div>
                   <div class="stat-trend positive">
                     <i class="fas fa-arrow-up"></i>
-                    <!-- <span>+18% this month</span> -->
                   </div>
                 </div>
               </div>
@@ -149,11 +143,12 @@
                   <i class="fas fa-chart-bar"></i>
                 </div>
                 <div class="stat-content-container">
-                  <div class="stat-number">${{ averageOrderValue }}</div>
-                  <div class="stat-label">Avg Order Value</div>
+                  <div class="stat-number">
+                    ${{ formatCurrency(orderStore.stats.averageOrderValue) }}
+                  </div>
+                  <div class="stat-label">Page Avg Order Value</div>
                   <div class="stat-trend positive">
                     <i class="fas fa-arrow-up"></i>
-                    <!-- <span>+5% this week</span> -->
                   </div>
                 </div>
               </div>
@@ -271,24 +266,6 @@
               </div>
 
               <div class="bulk-actions-grid">
-                <!-- <button
-                  class="bulk-action-btn export-selected"
-                  @click="exportSelected"
-                  :disabled="selectedOrders.length === 0"
-                >
-                  <i class="fas fa-download"></i>
-                  <span>Export Selected</span>
-                </button>
-
-                <button
-                  class="bulk-action-btn update-status"
-                  @click="openBulkStatusModal"
-                  :disabled="selectedOrders.length === 0"
-                >
-                  <i class="fas fa-edit"></i>
-                  <span>Update Status</span>
-                </button> -->
-
                 <button
                   class="bulk-action-btn print-invoices"
                   @click="printInvoices"
@@ -297,15 +274,6 @@
                   <i class="fas fa-print"></i>
                   <span>Print Invoices</span>
                 </button>
-
-                <!-- <button
-                  class="bulk-action-btn archive-orders"
-                  @click="archiveOrders"
-                  :disabled="selectedOrders.length === 0"
-                >
-                  <i class="fas fa-archive"></i>
-                  <span>Archive</span>
-                </button> -->
               </div>
             </div>
           </div>
@@ -320,9 +288,11 @@
                 Orders List
               </h2>
               <div class="results-info-text">
-                <span v-if="!isLoading">
-                  Showing {{ paginationInfo.start }}-{{ paginationInfo.end }} of
-                  {{ totalItems }} orders
+                <span v-if="!orderStore.loading">
+                  Showing {{ orderStore.paginationInfo.start }}-{{
+                    orderStore.paginationInfo.end
+                  }}
+                  of {{ orderStore.totalItems }} orders
                 </span>
               </div>
             </div>
@@ -370,7 +340,7 @@
           </div>
 
           <!-- Loading State -->
-          <div v-if="isLoading" class="loading-state-container">
+          <div v-if="orderStore.loading" class="loading-state-container">
             <div class="loading-content-wrapper">
               <div class="loading-spinner-container">
                 <div class="spinner-ring-animation"></div>
@@ -382,7 +352,7 @@
 
           <!-- Table View -->
           <div
-            v-else-if="orders.length > 0 && viewMode === 'table'"
+            v-else-if="orderStore.orders.length > 0 && viewMode === 'table'"
             class="table-wrapper-container"
           >
             <div class="table-scroll-container">
@@ -433,7 +403,7 @@
                 </thead>
                 <tbody class="table-body-section">
                   <tr
-                    v-for="order in orders"
+                    v-for="order in orderStore.orders"
                     :key="order.id"
                     class="table-data-row"
                   >
@@ -448,7 +418,7 @@
                     <td class="order-id-column-cell">
                       <div class="order-id-display">
                         <strong class="order-number-text"
-                          >#{{ formatOrderId(order.id) }}</strong
+                          >#{{ orderStore.formatOrderId(order.id) }}</strong
                         >
                         <span
                           class="order-type-badge"
@@ -575,23 +545,6 @@
                               <i class="fas fa-print"></i>
                               Print Invoice
                             </a>
-                            <!-- <a
-                              href="#"
-                              class="dropdown-menu-item"
-                              @click.prevent="duplicateOrder(order)"
-                            >
-                              <i class="fas fa-copy"></i>
-                              Duplicate Order
-                            </a> -->
-
-                            <!-- <a
-                              href="#"
-                              class="dropdown-menu-item"
-                              @click.prevent="sendEmail(order)"
-                            >
-                              <i class="fas fa-envelope"></i>
-                              Send Email
-                            </a> -->
                             <div class="dropdown-divider"></div>
                             <a
                               href="#"
@@ -613,12 +566,12 @@
 
           <!-- Cards View -->
           <div
-            v-else-if="orders.length > 0 && viewMode === 'cards'"
+            v-else-if="orderStore.orders.length > 0 && viewMode === 'cards'"
             class="cards-view-container"
           >
             <div class="orders-cards-grid">
               <div
-                v-for="order in orders"
+                v-for="order in orderStore.orders"
                 :key="order.id"
                 class="order-card-item"
               >
@@ -631,7 +584,7 @@
                       class="card-checkbox"
                     />
                     <span class="order-number"
-                      >#{{ formatOrderId(order.id) }}</span
+                      >#{{ orderStore.formatOrderId(order.id) }}</span
                     >
                   </div>
                   <span
@@ -725,7 +678,7 @@
           </div>
 
           <!-- Pagination -->
-          <div v-if="totalPages > 1" class="pagination-section-container">
+          <div class="pagination-section-container">
             <div class="pagination-info-section">
               <div class="page-size-selector-container">
                 <label class="page-size-label">Show:</label>
@@ -747,14 +700,14 @@
               <button
                 class="pagination-control-btn"
                 @click="loadOrders(1)"
-                :disabled="currentPage <= 1"
+                :disabled="orderStore.currentPage <= 1"
               >
                 <i class="fas fa-angle-double-left"></i>
               </button>
               <button
                 class="pagination-control-btn"
-                @click="loadOrders(currentPage - 1)"
-                :disabled="currentPage <= 1"
+                @click="loadOrders(orderStore.currentPage - 1)"
+                :disabled="orderStore.currentPage <= 1"
               >
                 <i class="fas fa-angle-left"></i>
                 Previous
@@ -762,11 +715,11 @@
 
               <div class="page-numbers-container">
                 <button
-                  v-for="page in displayedPages"
+                  v-for="page in orderStore.displayedPages"
                   :key="page"
                   :class="[
                     'page-number-btn',
-                    { 'active-page': page === currentPage },
+                    { 'active-page': page === orderStore.currentPage },
                   ]"
                   @click="loadOrders(page)"
                 >
@@ -776,16 +729,16 @@
 
               <button
                 class="pagination-control-btn"
-                @click="loadOrders(currentPage + 1)"
-                :disabled="currentPage >= totalPages"
+                @click="loadOrders(orderStore.currentPage + 1)"
+                :disabled="orderStore.currentPage >= orderStore.totalPages"
               >
                 Next
                 <i class="fas fa-angle-right"></i>
               </button>
               <button
                 class="pagination-control-btn"
-                @click="loadOrders(totalPages)"
-                :disabled="currentPage >= totalPages"
+                @click="loadOrders(orderStore.totalPages)"
+                :disabled="orderStore.currentPage >= orderStore.totalPages"
               >
                 <i class="fas fa-angle-double-right"></i>
               </button>
@@ -806,7 +759,7 @@
           <h3 class="modal-title-text">
             <i class="fas fa-receipt"></i>
             Order Details - #{{
-              selectedOrder ? formatOrderId(selectedOrder.id) : ""
+              selectedOrder ? orderStore.formatOrderId(selectedOrder.id) : ""
             }}
           </h3>
           <button class="modal-close-button" @click="closeDetailsModal">
@@ -823,7 +776,7 @@
                   <div class="detail-row-container">
                     <span class="detail-label-text">Order ID:</span>
                     <span class="detail-value-text"
-                      >#{{ formatOrderId(selectedOrder.id) }}</span
+                      >#{{ orderStore.formatOrderId(selectedOrder.id) }}</span
                     >
                   </div>
                   <div class="detail-row-container">
@@ -890,8 +843,7 @@
               </div>
             </div>
 
-            <!-- Order Timeline -->
-            <!-- Order Items Styled Like Timeline -->
+            <!-- Order Items -->
             <div class="order-timeline-section">
               <h6 class="details-section-title">Order Items</h6>
               <div class="timeline-container">
@@ -929,13 +881,12 @@
                 <i class="fas fa-edit"></i>
                 Edit Status
               </button>
-              <button class="modal-action-button print-action">
+              <button
+                class="modal-action-button print-action"
+                @click="printInvoice(selectedOrder)"
+              >
                 <i class="fas fa-print"></i>
                 Print Invoice
-              </button>
-              <button class="modal-action-button email-action">
-                <i class="fas fa-envelope"></i>
-                Send Email
               </button>
             </div>
           </div>
@@ -954,7 +905,7 @@
           <h3 class="modal-title-text">
             <i class="fas fa-edit"></i>
             Update Order Status - #{{
-              statusOrder ? formatOrderId(statusOrder.id) : ""
+              statusOrder ? orderStore.formatOrderId(statusOrder.id) : ""
             }}
           </h3>
           <button class="modal-close-button" @click="closeStatusModal">
@@ -1061,46 +1012,17 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useOrderStore } from "../stores/useOrderStore";
 
 export default {
   name: "OrdersPage",
   setup() {
     const orderStore = useOrderStore();
-    const isLoading = computed(() => orderStore.loading);
-    const orders = computed(() => orderStore.orders);
-    const totalOrders = computed(() => orderStore.totalItems);
 
-    const pendingOrders = computed(
-      () =>
-        orderStore.orders.filter((o) => o.status === "Pending Approval").length
-    );
-    const completedOrders = computed(
-      () => orderStore.orders.filter((o) => o.status === "Completed").length
-    );
-    const totalRevenue = computed(() =>
-      orderStore.orders
-        .reduce(
-          (sum, order) =>
-            sum +
-            (order.status === "Completed" ? parseFloat(order.totalAmount) : 0),
-          0
-        )
-        .toFixed(2)
-    );
-    const averageOrderValue = computed(() =>
-      completedOrders.value
-        ? (parseFloat(totalRevenue.value) / completedOrders.value).toFixed(2)
-        : "0.00"
-    );
-
+    // Local component state (only UI-specific state)
     const selectedOrder = ref(null);
     const statusOrder = ref(null);
-    const currentPage = ref(1);
-    const totalPages = ref(1);
-    const totalItems = ref(0);
-    const pageSize = ref(10);
     const viewMode = ref("table");
     const sortBy = ref("date-desc");
     const showDetailsModal = ref(false);
@@ -1109,6 +1031,11 @@ export default {
     const selectedOrders = ref([]);
     const selectAll = ref(false);
     const isSidebarCollapsed = ref(false);
+    const pageSize = ref(25);
+
+    // Status management
+    const availableStatuses = ref([]);
+    const selectedNewStatus = ref("");
     const statusNotes = ref("");
     const isUpdatingStatus = ref(false);
 
@@ -1121,45 +1048,14 @@ export default {
       search: "",
     });
 
-    const paginationInfo = computed(() => {
-      const start =
-        totalItems.value > 0 ? (currentPage.value - 1) * pageSize.value + 1 : 0;
-      const end = Math.min(
-        currentPage.value * pageSize.value,
-        totalItems.value
-      );
-      return { start, end };
-    });
-
-    const displayedPages = computed(() => {
-      const pages = [];
-      const maxPagesToShow = 5;
-      let startPage = Math.max(
-        1,
-        currentPage.value - Math.floor(maxPagesToShow / 2)
-      );
-      let endPage = Math.min(totalPages.value, startPage + maxPagesToShow - 1);
-
-      if (endPage - startPage + 1 < maxPagesToShow) {
-        startPage = Math.max(1, endPage - maxPagesToShow + 1);
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
-
-      return pages;
-    });
-
     const toggleSidebar = () => {
       isSidebarCollapsed.value = !isSidebarCollapsed.value;
     };
 
     const loadOrders = async (page = 1) => {
-      currentPage.value = page;
       try {
         const params = {
-          page: currentPage.value,
+          page,
           pageSize: pageSize.value,
           status: filters.value.status || undefined,
           paymentMethod: filters.value.paymentMethod || undefined,
@@ -1170,61 +1066,16 @@ export default {
           maxAmount: filters.value.maxAmount || undefined,
         };
 
-        console.log("Params: ", params);
-
-        const response = await orderStore.fetchOrders(params);
-
-        // ✅ CORRECT - Access the right properties
-        orders.value = response.data.data || [];
-        totalPages.value = response.data.totalPages || 1; // ✅ Fixed
-        totalItems.value = response.data.totalItems || 0; // ✅ Fixed
-
-        console.warn("📊 PAGINATION DEBUG:");
-        console.warn("  - Pages:", totalPages.value);
-        console.warn("  - Items:", totalItems.value);
-        console.warn("  - Orders count:", orders.value.length);
-        console.warn("  - Current page:", currentPage.value);
-        console.warn("  - Full response structure:", response);
-
-        // Rest of your code...
-        pendingOrders.value =
-          orders.value.filter((o) => o.status === "Pending Approval").length ||
-          0;
-        completedOrders.value =
-          orders.value.filter((o) => o.status === "Completed").length || 0;
-
-        totalRevenue.value = orders.value
-          .reduce(
-            (sum, order) =>
-              sum +
-              (order.status === "Completed"
-                ? parseFloat(order.totalAmount)
-                : 0),
-            0
-          )
-          .toFixed(2);
-
-        averageOrderValue.value = completedOrders.value
-          ? (parseFloat(totalRevenue.value) / completedOrders.value).toFixed(2)
-          : "0.00";
+        await orderStore.fetchOrders(params);
       } catch (error) {
-        console.error(
-          "Error loading orders:",
-          error.response?.data || error.message
-        );
-        showMessage(
-          `Error loading orders: ${error.message}. Check console & API.`,
-          "error"
-        );
-        orders.value = [];
-        totalItems.value = 0;
-        totalPages.value = 1;
+        console.error("Error loading orders:", error);
+        showMessage("Error loading orders. Please try again.", "error");
       }
     };
 
     const toggleSelectAll = () => {
       if (selectAll.value) {
-        selectedOrders.value = orders.value.map((order) => order.id);
+        selectedOrders.value = orderStore.orders.map((order) => order.id);
       } else {
         selectedOrders.value = [];
       }
@@ -1242,33 +1093,13 @@ export default {
       }, 300);
     };
 
-    const getAvailableStatusesFor = (currentStatus) => {
-      switch (currentStatus) {
-        case "Pending Approval":
-          return [
-            { key: "Confirmed", value: statusOptionsMap["Confirmed"] },
-            { key: "Rejected", value: statusOptionsMap["Rejected"] },
-          ];
-        case "Confirmed":
-          return [{ key: "Completed", value: statusOptionsMap["Completed"] }];
-
-        case "Rejected":
-          return [
-            {
-              key: "PendingApproval",
-              value: statusOptionsMap["PendingApproval"],
-            },
-          ];
-        default:
-          return [];
-      }
-    };
-
     const openStatusModal = (order) => {
       statusOrder.value = order;
       selectedNewStatus.value = "";
       statusNotes.value = "";
-      availableStatuses.value = getAvailableStatusesFor(order.status);
+      availableStatuses.value = orderStore.getAvailableStatusesFor(
+        order.status
+      );
       showStatusModal.value = true;
     };
 
@@ -1281,57 +1112,22 @@ export default {
       }, 300);
     };
 
-    const statusOptionsMap = {
-      PendingApproval: "Pending Approval",
-      Confirmed: "Confirmed",
-      Rejected: "Rejected",
-      Completed: "Completed",
-    };
-
     const updateOrderStatus = async () => {
       if (!selectedNewStatus.value || !statusOrder.value) return;
 
-      console.log("New Selected: ", selectedNewStatus.value);
-
       isUpdatingStatus.value = true;
       try {
-        const response = await orderStore.updateStatus(statusOrder.value.id, {
-          status: selectedNewStatus.value,
-          notesToBuyer: statusNotes.value, // ← UPDATE THIS LINE
-        });
+        const result = await orderStore.updateOrderStatus(
+          statusOrder.value.id,
+          selectedNewStatus.value,
+          statusNotes.value
+        );
 
-        if (response.data.success) {
-          showMessage(response.data.message, "success");
-
-          // Update the order in the list
-          const orderIndex = orders.value.findIndex(
-            (o) => o.id === statusOrder.value.id
-          );
-          if (orderIndex !== -1) {
-            orders.value[orderIndex].status = selectedNewStatus.value;
-            orders.value[orderIndex].statusDisplay =
-              statusOptionsMap[selectedNewStatus.value] ||
-              selectedNewStatus.value;
-            orders.value[orderIndex].statusChangedAt = new Date().toISOString();
-            orders.value[orderIndex].statusChangedBy = "Admin User";
-            if (statusNotes.value) {
-              orders.value[orderIndex].notesToBuyer = statusNotes.value;
-            }
-          }
-
-          // Update stats
-          pendingOrders.value =
-            orders.value.filter((o) => o.status === "Pending Approval")
-              .length || 0;
-          completedOrders.value =
-            orders.value.filter((o) => o.status === "Completed").length || 0;
-
+        if (result.success) {
+          showMessage(result.message, "success");
           closeStatusModal();
         } else {
-          showMessage(
-            response.data.message || "Failed to update order status.",
-            "error"
-          );
+          showMessage(result.message, "error");
         }
       } catch (error) {
         console.error("Error updating order status:", error);
@@ -1353,116 +1149,69 @@ export default {
       loadOrders(1);
     };
 
-    const exportSelected = () => {
-      if (selectedOrders.value.length === 0) return;
-      showMessage(
-        `Exporting ${selectedOrders.value.length} orders...`,
-        "success"
-      );
-    };
-
-    const openBulkStatusModal = () => {
-      if (selectedOrders.value.length === 0) return;
-      showMessage("Bulk status update feature coming soon!", "info");
-    };
-
     const printInvoices = async () => {
-      if (selectedOrders.length === 0) return;
-
-      const orderIds = selectedOrders.map((order) => order.id);
+      if (selectedOrders.value.length === 0) return;
 
       try {
-        const response = await orderStore.downloadInvoices(orderIds);
-
-        const blob = new Blob([response.data], { type: "application/pdf" });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-
-        link.href = url;
-        link.setAttribute("download", "Invoices.pdf");
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
+        const result = await orderStore.downloadInvoices(selectedOrders.value);
+        if (result.success) {
+          showMessage(result.message, "success");
+        } else {
+          showMessage(result.message, "error");
+        }
       } catch (error) {
         console.error("Error downloading invoices:", error);
         showMessage("Failed to download invoices. Please try again.", "error");
       }
     };
 
-    const archiveOrders = () => {
-      if (selectedOrders.value.length === 0) return;
-      showMessage(
-        `Archiving ${selectedOrders.value.length} orders...`,
-        "success"
-      );
-    };
-
-    const duplicateOrder = (order) => {
-      showMessage(
-        `Duplicating order #${formatOrderId(order.id)}...`,
-        "success"
-      );
-    };
-
     const printInvoice = async (order) => {
       try {
-        const response = await orderStore.downloadInvoice(order.id);
-
-        const blob = new Blob([response.data], { type: "application/pdf" });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-
-        link.href = url;
-        link.setAttribute("download", `Invoice_${formatOrderId(order.id)}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-
-        showMessage(
-          `Invoice for order #${formatOrderId(
-            order.id
-          )} downloaded successfully.`,
-          "success"
-        );
+        const result = await orderStore.downloadInvoices([order.id]);
+        if (result.success) {
+          showMessage(
+            `Invoice for order #${orderStore.formatOrderId(
+              order.id
+            )} downloaded successfully.`,
+            "success"
+          );
+        } else {
+          showMessage(
+            `Failed to download invoice for order #${orderStore.formatOrderId(
+              order.id
+            )}.`,
+            "error"
+          );
+        }
       } catch (error) {
         console.error("Error downloading invoice:", error);
         showMessage(
-          `Failed to download invoice for order #${formatOrderId(order.id)}.`,
+          `Failed to download invoice for order #${orderStore.formatOrderId(
+            order.id
+          )}.`,
           "error"
         );
       }
     };
 
-    const sendEmail = (order) => {
-      showMessage(
-        `Sending email for order #${formatOrderId(order.id)}...`,
-        "success"
-      );
-    };
-
     const deleteOrder = async (order) => {
       if (
         confirm(
-          `Are you sure you want to delete order #${formatOrderId(order.id)}?`
+          `Are you sure you want to delete order #${orderStore.formatOrderId(
+            order.id
+          )}?`
         )
       ) {
         try {
-          await orderStore.deleteOrder(order.id);
-          showMessage(
-            `Order #${formatOrderId(order.id)} deleted successfully!`,
-            "success"
-          );
-          await loadOrders(); // reload orders after deletion
+          const result = await orderStore.deleteOrder(order.id);
+          if (result.success) {
+            showMessage(result.message, "success");
+          } else {
+            showMessage(result.message, "error");
+          }
         } catch (error) {
           console.error("Failed to delete order:", error);
-          showMessage(
-            `Failed to delete order #${formatOrderId(
-              order.id
-            )}. Please try again.`,
-            "error"
-          );
+          showMessage("Failed to delete order. Please try again.", "error");
         }
       }
     };
@@ -1497,10 +1246,6 @@ export default {
         Completed: "fas fa-flag-checkered",
       };
       return icons[status] || "fas fa-circle";
-    };
-
-    const formatOrderId = (id) => {
-      return id ? String(id).substring(0, 8).toUpperCase() : "N/A";
     };
 
     const formatCurrency = (amount) => {
@@ -1538,24 +1283,14 @@ export default {
     };
 
     onMounted(() => {
-      loadOrders();
+      loadOrders(1);
       orderStore.initSignalR();
     });
 
     return {
-      orders,
-      isLoading,
-      totalOrders,
-      pendingOrders,
-      completedOrders,
-      totalRevenue,
-      averageOrderValue,
+      orderStore,
       selectedOrder,
       statusOrder,
-      currentPage,
-      totalPages,
-      totalItems,
-      pageSize,
       viewMode,
       sortBy,
       showDetailsModal,
@@ -1564,11 +1299,12 @@ export default {
       selectedOrders,
       selectAll,
       isSidebarCollapsed,
+      pageSize,
+      availableStatuses,
+      selectedNewStatus,
       statusNotes,
       isUpdatingStatus,
       filters,
-      paginationInfo,
-      displayedPages,
       toggleSidebar,
       loadOrders,
       toggleSelectAll,
@@ -1578,25 +1314,18 @@ export default {
       closeStatusModal,
       updateOrderStatus,
       clearAllFilters,
-      exportSelected,
-      openBulkStatusModal,
       printInvoices,
-      archiveOrders,
-      duplicateOrder,
       printInvoice,
-      sendEmail,
       deleteOrder,
       sortColumn,
       showMessage,
       removeMessage,
       getStatusIcon,
-      formatOrderId,
       formatCurrency,
       formatDate,
       formatTime,
       debouncedSearch,
       totalQuantity,
-      getAvailableStatusesFor,
     };
   },
 };

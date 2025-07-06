@@ -20,7 +20,7 @@
       <nav class="sidebar-menu">
         <ul>
           <li>
-            <router-link to="/admin/check" class="nav-item"
+            <router-link to="/admin/analytics" class="nav-item active"
               ><i class="fas fa-tachometer-alt fa-fw"></i
               ><span v-if="!isSidebarCollapsed">Dashboard</span></router-link
             >
@@ -43,12 +43,12 @@
               ><span v-if="!isSidebarCollapsed">Products</span></router-link
             >
           </li>
-          <li>
+          <!-- <li>
             <router-link to="/admin/analytics" class="nav-item active"
               ><i class="fas fa-chart-line fa-fw"></i
               ><span v-if="!isSidebarCollapsed">Analytics</span></router-link
             >
-          </li>
+          </li> -->
           <li>
             <router-link to="/admin/settings" class="nav-item"
               ><i class="fas fa-cog fa-fw"></i
@@ -71,10 +71,10 @@
             </div>
           </div>
           <div class="navbar-right-main">
-            <button class="notification-btn">
+            <!-- <button class="notification-btn">
               <i class="fas fa-bell"></i>
               <span class="notification-badge">2</span>
-            </button>
+            </button> -->
             <div class="user-profile-section">
               <img
                 src="../assets/placeholder.svg?width=40&height=40"
@@ -606,7 +606,7 @@
         </section>
 
         <!-- Export Section -->
-        <section class="export-section">
+        <!-- <section class="export-section">
           <div class="export-card">
             <div class="export-header">
               <h3 class="export-title">
@@ -635,7 +635,7 @@
               </button>
             </div>
           </div>
-        </section>
+        </section> -->
       </main>
     </div>
 

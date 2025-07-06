@@ -188,7 +188,7 @@ public class UsersController(CustomDbContext customDbContext, IHubContext<Notifi
         var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
         var hashedPassword = Convert.ToBase64String(hashedBytes);
 
-
+        var parseddateTime = DateTime.SpecifyKind(dto.DateOfBirth.Value, DateTimeKind.Utc); 
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -196,7 +196,7 @@ public class UsersController(CustomDbContext customDbContext, IHubContext<Notifi
             PasswordHash = hashedPassword, // secure hashing
             FullName = dto.FullName,
             Gender = dto.Gender,
-            DateOfBirth = dto.DateOfBirth,
+            DateOfBirth = parseddateTime,
             ProfilePictureUrl = dto.ProfilePictureUrl,
             ContactNumber = dto.ContactNumber,
             CurrentAddressLine1 = dto.CurrentAddressLine1,
@@ -223,10 +223,12 @@ public class UsersController(CustomDbContext customDbContext, IHubContext<Notifi
         if (user == null)
             return NotFound("User not found.");
 
+        var parseddateTime = DateTime.SpecifyKind(dto.DateOfBirth.Value, DateTimeKind.Utc);
+
         // Update fields
         user.FullName = dto.FullName;
         user.Gender = dto.Gender;
-        user.DateOfBirth = dto.DateOfBirth;
+        user.DateOfBirth = parseddateTime;
         user.ProfilePictureUrl = dto.ProfilePictureUrl;
         user.Email = dto.Email;
         user.CurrentAddressLine1 = dto.CurrentAddressLine1;

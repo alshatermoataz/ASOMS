@@ -149,15 +149,15 @@ namespace ASOMS.Cms.Controllers.Orders
 
         [HttpGet]
         public async Task<IActionResult> GetOrders(
-    int page = 1,
-    int pageSize = 10,
-    string? status = null,
-    string? paymentMethod = null,
-    string? search = null,
-    string? sort = null,
-    string? dateRange = null,
-    decimal? minAmount = null,
-    decimal? maxAmount = null)
+        int page = 1,
+        int pageSize = 10,
+        string? status = null,
+        string? paymentMethod = null,
+        string? search = null,
+        string? sort = null,
+        string? dateRange = null,
+        decimal? minAmount = null,
+        decimal? maxAmount = null)
 
         {
             if (page <= 0) page = 1;
