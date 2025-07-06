@@ -10,64 +10,55 @@ using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// CORS allowed origins
 string[] allowedOrigins = new[]
 {
     "http://localhost:5173",
     "https://asoms.vercel.app"
 };
 
+// Define a consistent CORS policy name
+const string CorsPolicyName = "AllowFrontend";
+
+// Register CORS policy
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("allowedOrigins",
-        policy =>
-        {
-            policy
-                .WithOrigins(allowedOrigins)
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
-        });
+    options.AddPolicy(CorsPolicyName, policy =>
+    {
+        policy
+            .WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
 });
 
-
+// Register controllers and Swagger
 builder.Services.AddControllers();
-// Register SignalR
 builder.Services.AddSignalR();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
+// Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderServices>();
 
+// Configure database context
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<CustomDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-
-//builder.Services.AddDbContext<CustomDbContext>(options =>
-//    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-//builder.Services.AddDbContext<CustomDbContext>(options =>
-//    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-//           .EnableSensitiveDataLogging()
-//           .LogTo(Console.WriteLine, LogLevel.Information));
-
-
-
 var app = builder.Build();
 
-app.UseCors("AllowFrontend");
+// Apply CORS middleware
+app.UseCors(CorsPolicyName);
 
-
-// Serve wwwroot
+// Serve static files from wwwroot
 app.UseStaticFiles();
 
-// Serve uploads
+// Serve files from wwwroot/uploads via /uploads path
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
@@ -75,27 +66,26 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/uploads"
 });
 
-// Configure the HTTP request pipeline.
+// Enable Swagger only in development
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Enable HTTPS redirection and authorization
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
+// Map controller endpoints and SignalR hub
 app.MapControllers();
-// Map the SignalR hub endpoint
 app.MapHub<ASOMS.Cms.Services.NotificationHub>("/hubs/notifications");
 
-
+// Seed database on startup
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<CustomDbContext>();
     DataSeeder.Seed(db);
 }
-
 
 app.Run();
