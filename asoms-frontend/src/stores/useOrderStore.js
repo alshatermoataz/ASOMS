@@ -2,8 +2,8 @@ import { defineStore } from "pinia"
 import axios from "axios"
 import { getCurrentInstance } from "vue"
 
-const API_URL = "https://asoms-production.up.railway.app/api/orders"
-// const API_URL = "https://localhost:7004/api/orders"
+// const API_URL = "https://asoms-production.up.railway.app/api/orders"
+const API_URL = "https://localhost:7004/api/orders"
 
 
 export const useOrderStore = defineStore("orders", {

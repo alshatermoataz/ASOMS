@@ -8,6 +8,8 @@ using ASOMS.DAL.EntityFramework;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using QuestPDF.Infrastructure;
+using QuestPDF.Drawing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +53,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<CustomDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+QuestPDF.Settings.License = LicenseType.Community;
+
 var app = builder.Build();
 
 // Apply CORS middleware
@@ -81,6 +85,8 @@ app.UseAuthorization();
 // Map controller endpoints and SignalR hub
 app.MapControllers();
 app.MapHub<ASOMS.Cms.Services.NotificationHub>("/hubs/notifications");
+
+FontManager.RegisterFont(File.OpenRead("Fonts/Roboto-Regular.ttf"));
 
 app.UseExceptionHandler(errorApp =>
 {
