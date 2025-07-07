@@ -1478,14 +1478,14 @@ export default {
         if (filters.value.stockLevel) {
           switch (filters.value.stockLevel) {
             case "low":
-              queryParams.append("maxStock", "10");
+              queryParams.append("maxStock", "9");
               break;
             case "medium":
               queryParams.append("minStock", "10");
               queryParams.append("maxStock", "50");
               break;
             case "high":
-              queryParams.append("minStock", "50");
+              queryParams.append("minStock", "51");
               break;
           }
         }

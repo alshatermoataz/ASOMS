@@ -336,24 +336,31 @@ namespace ASOMS.Cms.Controllers.Orders
         [HttpPost("download-invoices")]
         public async Task<IActionResult> DownloadInvoices([FromBody] List<Guid> orderIds)
         {
-            if (orderIds == null || !orderIds.Any())
-                return BadRequest(new { message = "No order IDs provided." });
+            try
+            {
+                if (orderIds == null || !orderIds.Any())
+                    return BadRequest(new { message = "No order IDs provided." });
 
-            var orders = await customDbContext.Orders
-                .Include(o => o.User)
-                .Include(o => o.Items)
-                    .ThenInclude(i => i.Product)
-                .Where(o => orderIds.Contains(o.Id))
-                .ToListAsync();
+                var orders = await customDbContext.Orders
+                    .Include(o => o.User)
+                    .Include(o => o.Items)
+                        .ThenInclude(i => i.Product)
+                    .Where(o => orderIds.Contains(o.Id))
+                    .ToListAsync();
 
-            if (orders.Count == 0)
-                return NotFound(new { message = "No orders found." });
+                if (orders.Count == 0)
+                    return NotFound(new { message = "No orders found." });
 
-            // Generate PDF content (example using a helper method)
-            var pdfBytes = await orderService.Generate(orders);
-
-            return File(pdfBytes, "application/pdf", "Invoices.pdf");
+                var pdfBytes = await orderService.Generate(orders);
+                return File(pdfBytes, "application/pdf", "Invoices.pdf");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Download invoice failed: " + ex.Message);
+                return StatusCode(500, new { message = "Server error", detail = ex.Message });
+            }
         }
+
 
 
 

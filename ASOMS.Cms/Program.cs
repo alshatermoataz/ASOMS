@@ -5,6 +5,7 @@ using ASOMS.Cms.Services.OrdersInterface;
 using ASOMS.Cms.Services.ProductServices;
 using ASOMS.Core.Interfaces;
 using ASOMS.DAL.EntityFramework;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
@@ -80,6 +81,22 @@ app.UseAuthorization();
 // Map controller endpoints and SignalR hub
 app.MapControllers();
 app.MapHub<ASOMS.Cms.Services.NotificationHub>("/hubs/notifications");
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        var exception = exceptionHandlerPathFeature?.Error;
+
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(exception, "Unhandled exception occurred.");
+
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsync("Internal server error");
+    });
+});
+
 
 // Seed database on startup
 using (var scope = app.Services.CreateScope())

@@ -50,9 +50,9 @@
             >
           </li> -->
           <li>
-            <a href="#" class="nav-item"
+            <router-link to="/admin/settings" class="nav-item"
               ><i class="fas fa-cog fa-fw"></i
-              ><span v-if="!isSidebarCollapsed">Settings</span></a
+              ><span v-if="!isSidebarCollapsed">Settings</span></router-link
             >
           </li>
         </ul>
@@ -564,27 +564,27 @@
                             <a
                               href="#"
                               class="dropdown-menu-item"
-                              @click.prevent="viewOrderHistory(customer)"
+                              @click.prevent="viewCustomerDetails(customer)"
                             >
                               <i class="fas fa-history"></i>
                               Order History
                             </a>
-                            <a
+                            <!-- <a
                               href="#"
                               class="dropdown-menu-item"
                               @click.prevent="sendEmail(customer)"
                             >
                               <i class="fas fa-envelope"></i>
                               Send Email
-                            </a>
-                            <a
+                            </a> -->
+                            <!-- <a
                               href="#"
                               class="dropdown-menu-item"
                               @click.prevent="resetPassword(customer)"
                             >
                               <i class="fas fa-key"></i>
                               Reset Password
-                            </a>
+                            </a> -->
                             <div class="dropdown-divider"></div>
                             <a
                               href="#"
@@ -1094,20 +1094,20 @@
                 <i class="fas fa-edit"></i>
                 Edit Customer
               </button>
-              <button
+              <!-- <button
                 class="modal-action-button view-orders-action"
                 @click="viewOrderHistory(selectedCustomer)"
               >
                 <i class="fas fa-history"></i>
                 View All Orders
-              </button>
-              <button
+              </button> -->
+              <!-- <button
                 class="modal-action-button email-action"
                 @click="sendEmail(selectedCustomer)"
               >
                 <i class="fas fa-envelope"></i>
                 Send Email
-              </button>
+              </button> -->
             </div>
           </div>
         </div>

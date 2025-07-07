@@ -3,6 +3,8 @@ import axios from "axios"
 import { getCurrentInstance } from "vue"
 
 const API_URL = "https://asoms-production.up.railway.app/api/orders"
+// const API_URL = "https://localhost:7004/api/orders"
+
 
 export const useOrderStore = defineStore("orders", {
   state: () => ({
@@ -211,9 +213,6 @@ export const useOrderStore = defineStore("orders", {
     updateStats() {
       this.stats.totalOrders = this.totalItems
       this.stats.pendingOrders = this.orders.filter((o) => o.status === "Pending Approval").length
-      console.log("PENDING: " , this.stats.pendingOrders);
-            console.log("PENDING: " , this.stats.pendingOrders.length);
-
       
       this.stats.completedOrders = this.orders.filter((o) => o.status === "Completed").length
 

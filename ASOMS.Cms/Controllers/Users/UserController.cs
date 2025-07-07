@@ -188,30 +188,32 @@ public class UsersController(CustomDbContext customDbContext, IHubContext<Notifi
         var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(dto.Password));
         var hashedPassword = Convert.ToBase64String(hashedBytes);
 
-        var parseddateTime = DateTime.SpecifyKind(dto.DateOfBirth.Value, DateTimeKind.Utc); 
         var user = new User
         {
             Id = Guid.NewGuid(),
             Email = dto.Email,
-            PasswordHash = hashedPassword, // secure hashing
+            PasswordHash = hashedPassword,
             FullName = dto.FullName,
-            Gender = dto.Gender,
-            DateOfBirth = parseddateTime,
-            ProfilePictureUrl = dto.ProfilePictureUrl,
             ContactNumber = dto.ContactNumber,
+            // Assign optional fields only if provided
+            Gender = dto.Gender,
+            DateOfBirth = dto.DateOfBirth.HasValue
+                ? DateTime.SpecifyKind(dto.DateOfBirth.Value, DateTimeKind.Utc)
+                : null,
+            ProfilePictureUrl = dto.ProfilePictureUrl,
             CurrentAddressLine1 = dto.CurrentAddressLine1,
             Postcode = dto.Postcode,
-            Role = dto.Role,
+            Role = dto.Role
         };
 
         customDbContext.Users.Add(user);
         await customDbContext.SaveChangesAsync();
 
-        // Broadcast customer created event
         await hubContext.Clients.All.SendAsync("CustomerUpdated", new { user.Id, user.FullName, user.Email });
 
         return Ok(new { message = "Customer created successfully", user.Id });
     }
+
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserDto dto)
@@ -223,25 +225,41 @@ public class UsersController(CustomDbContext customDbContext, IHubContext<Notifi
         if (user == null)
             return NotFound("User not found.");
 
-        var parseddateTime = DateTime.SpecifyKind(dto.DateOfBirth.Value, DateTimeKind.Utc);
-
-        // Update fields
+        // Required fields
         user.FullName = dto.FullName;
-        user.Gender = dto.Gender;
-        user.DateOfBirth = parseddateTime;
-        user.ProfilePictureUrl = dto.ProfilePictureUrl;
         user.Email = dto.Email;
-        user.CurrentAddressLine1 = dto.CurrentAddressLine1;
-        user.Postcode = dto.Postcode;
-        user.ContactNumber = dto.ContactNumber!;
+
+        user.ContactNumber = dto.ContactNumber;
+
+        // Optional fields
+        if (!string.IsNullOrWhiteSpace(dto.Gender))
+            user.Gender = dto.Gender;
+
+        if (dto.DateOfBirth.HasValue)
+            user.DateOfBirth = DateTime.SpecifyKind(dto.DateOfBirth.Value, DateTimeKind.Utc);
+
+        if (!string.IsNullOrWhiteSpace(dto.ProfilePictureUrl))
+            user.ProfilePictureUrl = dto.ProfilePictureUrl;
+
+        if (!string.IsNullOrWhiteSpace(dto.CurrentAddressLine1))
+            user.CurrentAddressLine1 = dto.CurrentAddressLine1;
+
+        if (!string.IsNullOrWhiteSpace(dto.Postcode))
+            user.Postcode = dto.Postcode;
 
         await customDbContext.SaveChangesAsync();
 
         // Broadcast customer updated event
-        await hubContext.Clients.All.SendAsync("CustomerUpdated", new { user.Id, user.FullName, user.Email });
+        await hubContext.Clients.All.SendAsync("CustomerUpdated", new
+        {
+            user.Id,
+            user.FullName,
+            user.Email
+        });
 
         return Ok(new { message = "User updated successfully", user.Id });
     }
+
 
 
 }

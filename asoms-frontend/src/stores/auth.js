@@ -4,6 +4,15 @@ import axios from 'axios'
 
 const API_BASE = 'https://asoms-production.up.railway.app'
 
+// Helper to safely parse JSON
+function safeJSONParse(value, fallback = null) {
+  try {
+    return JSON.parse(value)
+  } catch (_) {
+    return fallback
+  }
+}
+
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
@@ -23,13 +32,11 @@ export const useAuthStore = defineStore('auth', {
     },
 
     setUser(user) {
-      this.user = user
-      localStorage.setItem('user', JSON.stringify(user))
+      this.login(user, this.token)
     },
 
     setToken(token) {
-      this.token = token
-      localStorage.setItem('token', token)
+      this.login(this.user, token)
     },
 
     logout() {
@@ -40,11 +47,17 @@ export const useAuthStore = defineStore('auth', {
     },
 
     restore() {
-      const storedUser = localStorage.getItem('user')
-      const storedToken = localStorage.getItem('token')
-      if (storedUser && storedToken) {
-        this.user = JSON.parse(storedUser)
-        this.token = storedToken
+      const rawUser = localStorage.getItem('user')
+      const rawToken = localStorage.getItem('token')
+
+      const parsedUser = rawUser ? safeJSONParse(rawUser) : null
+
+      if (parsedUser && rawToken) {
+        this.user = parsedUser
+        this.token = rawToken
+      } else {
+        localStorage.removeItem('user')
+        localStorage.removeItem('token')
       }
     },
 
@@ -63,7 +76,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Upload profile picture using your API endpoint
     async uploadProfilePicture(file) {
       try {
         if (!this.user?.id) {
@@ -84,7 +96,6 @@ export const useAuthStore = defineStore('auth', {
           }
         )
 
-        // Update user profile picture URL in store
         if (response.data && response.data.url) {
           this.user.profilePictureUrl = response.data.url
           localStorage.setItem('user', JSON.stringify(this.user))
@@ -97,7 +108,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Update user profile data via API
     async updateUserProfile(updatedFields) {
       try {
         if (!this.user?.id) {
@@ -115,7 +125,6 @@ export const useAuthStore = defineStore('auth', {
           }
         )
 
-        // Update local user data
         this.user = {
           ...this.user,
           ...updatedFields
@@ -129,7 +138,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Update user name specifically
     async updateUserName(newName) {
       try {
         const response = await axios.put(
@@ -137,10 +145,8 @@ export const useAuthStore = defineStore('auth', {
           {
             fullName: newName,
             email: this.user.email,
-            // Include other required fields if needed
             contactNumber: this.user.contactNumber || '',
-            address: this.user.address || '',
-            // Add any other fields your API requires
+            address: this.user.address || ''
           },
           {
             headers: {
@@ -148,22 +154,20 @@ export const useAuthStore = defineStore('auth', {
               'Content-Type': 'application/json'
             }
           }
-        );
-    
-        // Update the user object with the new name
+        )
+
         if (this.user) {
-          this.user.fullName = newName;
-          localStorage.setItem('user', JSON.stringify(this.user));
+          this.user.fullName = newName
+          localStorage.setItem('user', JSON.stringify(this.user))
         }
-    
-        return response.data;
+
+        return response.data
       } catch (error) {
-        console.error('Error updating user name:', error);
-        throw error;
+        console.error('Error updating user name:', error)
+        throw error
       }
     },
 
-    // Local-only update methods (for immediate UI updates)
     updateUserProfileLocal(updatedFields) {
       this.user = {
         ...this.user,
@@ -186,7 +190,6 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Fetch user orders for statistics
     async fetchUserOrders() {
       try {
         if (!this.user?.id) {
@@ -209,15 +212,12 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    // Update user settings
     async updateUserSettings(settings) {
       try {
         if (!this.user?.id) {
           throw new Error('User ID not found')
         }
 
-        // If you have a settings endpoint, use it
-        // Otherwise, you can store settings locally or as part of user profile
         const response = await axios.put(
           `${API_BASE}/api/Users/${this.user.id}/settings`,
           settings,
@@ -231,7 +231,6 @@ export const useAuthStore = defineStore('auth', {
 
         return response.data
       } catch (err) {
-        // If no settings endpoint exists, store locally
         console.warn('Settings endpoint not available, storing locally:', err)
         localStorage.setItem('userSettings', JSON.stringify(settings))
         return settings

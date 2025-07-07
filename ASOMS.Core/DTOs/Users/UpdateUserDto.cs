@@ -10,19 +10,22 @@ namespace ASOMS.Core.DTOs.Users
     public class UpdateUserDto
     {
         [Required]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = null!;
 
+        [Required, EmailAddress]
+        public string Email { get; set; } = null!;
+
+
+
+        [Required]
+        public string ContactNumber { get; set; } = null!;
+
+        // Optional fields
         public string? Gender { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string? ProfilePictureUrl { get; set; }
-
-        [Required, EmailAddress]
-        public string Email { get; set; }
-
         public string? CurrentAddressLine1 { get; set; }
         public string? Postcode { get; set; }
-        public string? ContactNumber { get; set; }
-
     }
 
 }

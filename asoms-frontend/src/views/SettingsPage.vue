@@ -342,10 +342,10 @@
                       <td class="profile-cell">
                         <div class="profile-avatar">
                           <img
-                            v-if="admin.profilePictureUrl"
+                            v-if="imageBase(admin.profilePictureUrl)"
                             :src="imageBase(admin.profilePictureUrl)"
-                            :alt="admin.fullName"
-                            class="avatar-img"
+                            alt="Profile Preview"
+                            class="preview-img"
                           />
                           <i v-else class="fas fa-user-shield"></i>
                         </div>
@@ -439,12 +439,8 @@
               <div class="image-upload-container">
                 <div class="image-preview">
                   <img
-                    v-if="
-                      imageBase(adminForm.image) || adminForm.profilePictureUrl
-                    "
-                    :src="
-                      imageBase(adminForm.image) || adminForm.profilePictureUrl
-                    "
+                    v-if="previewUrl"
+                    :src="previewUrl"
                     alt="Profile Preview"
                     class="preview-img"
                   />
@@ -589,6 +585,7 @@
 
 <script>
 import { ref, reactive, onMounted } from "vue";
+import { computed, watch, onUnmounted } from "vue";
 import axios from "axios";
 
 export default {
@@ -653,6 +650,21 @@ export default {
         isSaving.value = false;
       }
     };
+
+    const previewUrl = computed(() => {
+      if (adminForm.value.image) {
+        return URL.createObjectURL(adminForm.value.image); // File selected
+      }
+
+      if (adminForm.value.profilePictureUrl) {
+        const url = adminForm.value.profilePictureUrl;
+        return url.startsWith("http") ? url : `${API_BASE_URL}${url}`; // Existing URL from DB
+      }
+
+      imageBase();
+
+      return null;
+    });
 
     const loadAdmins = async () => {
       isLoadingAdmins.value = true;
@@ -745,7 +757,6 @@ export default {
               fullName: adminForm.value.fullName,
               email: adminForm.value.email,
               contactNumber: adminForm.value.contactNumber,
-              profilePictureUrl: adminForm.value.profilePictureUrl,
             }
           );
 
@@ -778,12 +789,12 @@ export default {
           });
 
           // Upload image if provided
-          if (adminForm.value.image && response.data.userId) {
+          if (adminForm.value.image && response.data.id) {
             const formData = new FormData();
             formData.append("file", adminForm.value.image);
 
             await axios.post(
-              `${API_BASE_URL}/Users/${response.data.userId}/api/upload-profile-picture`,
+              `${API_BASE_URL}/api/Users/${response.data.id}/upload-profile-picture`,
               formData,
               {
                 headers: {
@@ -853,6 +864,21 @@ export default {
       messages.value.splice(index, 1);
     };
 
+    let oldBlobUrl = null;
+
+    watch(previewUrl, (newVal, oldVal) => {
+      if (oldVal && oldVal.startsWith("blob:")) {
+        URL.revokeObjectURL(oldVal); // Cleanup old blob when image changes
+      }
+      if (newVal && newVal.startsWith("blob:")) {
+        oldBlobUrl = newVal; // Track current blob
+      }
+    });
+
+    onUnmounted(() => {
+      if (oldBlobUrl) URL.revokeObjectURL(oldBlobUrl); // Cleanup on modal close
+    });
+
     onMounted(() => {
       loadAdmins();
     });
@@ -871,6 +897,7 @@ export default {
       editingAdmin,
       adminFilters,
       adminForm,
+      previewUrl,
       toggleSidebar,
       saveGeneralSettings,
       loadAdmins,
