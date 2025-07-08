@@ -16,6 +16,8 @@ import AnalyticsPage from '../views/AnalyticsPage.vue'
 import SettingsPage from '../views/SettingsPage.vue'
 import { useAuthStore } from '../stores/auth'
 import ProfilePage from '../views/ProfilePage.vue'
+import ForgotPassword from '../views/ForgotPasswordPage.vue'
+
 
 const routes = [
   {
@@ -97,6 +99,11 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: ProfilePage
+  },
+  {
+    path: '/forgotpassword',
+    name: 'forgotpassword',
+    component: ForgotPassword
   }
 ]
 
