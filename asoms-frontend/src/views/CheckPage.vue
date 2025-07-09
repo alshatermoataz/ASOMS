@@ -90,14 +90,14 @@
               <i class="fas fa-bell"></i>
               <span class="notification-badge">3</span>
             </button> -->
-            <div class="user-profile-section">
+            <!-- <div class="user-profile-section">
               <img src="" alt="Admin User" class="user-avatar" />
               <div class="user-details">
                 <span class="user-name">Admin User</span>
                 <span class="user-role">Administrator</span>
               </div>
               <i class="fas fa-chevron-down dropdown-arrow"></i>
-            </div>
+            </div> -->
           </div>
         </div>
       </nav>

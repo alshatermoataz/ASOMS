@@ -75,7 +75,7 @@
               <i class="fas fa-bell"></i>
               <span class="notification-badge">{{ newCustomersCount }}</span>
             </button> -->
-            <div class="user-profile-section">
+            <!-- <div class="user-profile-section">
               <img
                 src="../assets/placeholder.svg?width=40&height=40"
                 alt="Admin User"
@@ -85,7 +85,7 @@
                 <span class="user-name">Admin User</span>
                 <span class="user-role">Administrator</span>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </nav>
