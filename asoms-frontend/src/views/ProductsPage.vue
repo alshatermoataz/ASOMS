@@ -623,14 +623,14 @@
                             <i class="fas fa-ellipsis-v"></i>
                           </button>
                           <div class="dropdown-menu-list">
-                            <a
+                            <!-- <a
                               href="#"
                               class="dropdown-menu-item"
                               @click.prevent="duplicateProduct(product)"
                             >
                               <i class="fas fa-copy"></i>
                               Duplicate Product
-                            </a>
+                            </a> -->
                             <a
                               href="#"
                               class="dropdown-menu-item"
@@ -639,7 +639,7 @@
                               <i class="fas fa-boxes"></i>
                               Update Stock
                             </a>
-                            <a
+                            <!-- <a
                               href="#"
                               class="dropdown-menu-item"
                               @click.prevent="toggleProductStatus(product)"
@@ -656,7 +656,7 @@
                                   ? "Deactivate"
                                   : "Activate"
                               }}
-                            </a>
+                            </a> -->
                             <div class="dropdown-divider"></div>
                             <a
                               href="#"
@@ -1372,7 +1372,8 @@ export default {
   name: "ProductsPage",
   setup() {
     // API base URL
-    const apiBaseUrl = "https://asoms-production.up.railway.app";
+    // const apiBaseUrl = "https://asoms-production.up.railway.app";
+    const apiBaseUrl = "https://localhost:7004";
 
     // State variables
     const products = ref([]);

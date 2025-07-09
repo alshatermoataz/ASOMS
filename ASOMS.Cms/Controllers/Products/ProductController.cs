@@ -161,5 +161,58 @@ namespace ASOMS.API.Controllers
                 return StatusCode(500, "An error occurred while updating the product");
             }
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProduct(Guid id)
+        {
+            try
+            {
+                var product = await customDbContext.Products.FindAsync(id);
+                if (product == null)
+                    return NotFound($"Product with ID {id} not found");
+
+                //// Optional: Delete image from Cloudinary
+                //if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                //{
+                //    var publicId = GetPublicIdFromUrl(product.ImageUrl);
+                //    if (!string.IsNullOrEmpty(publicId))
+                //    {
+                //        var deletionParams = new DeletionParams(publicId);
+                //        var deletionResult = await _cloudinary.DestroyAsync(deletionParams);
+                //        if (deletionResult.Result != "ok")
+                //            _logger.LogWarning("Failed to delete image from Cloudinary: {Reason}", deletionResult.Error?.Message);
+                //    }
+                //}
+
+                customDbContext.Products.Remove(product);
+                await customDbContext.SaveChangesAsync();
+
+                // Broadcast product deleted event
+                await hubContext.Clients.All.SendAsync("ProductDeleted", product.Id);
+
+                return Ok(new { message = "Product deleted successfully", productId = product.Id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting product {ProductId}", id);
+                return StatusCode(500, "An error occurred while deleting the product");
+            }
+        }
+
+        //private string? GetPublicIdFromUrl(string imageUrl)
+        //{
+        //    try
+        //    {
+        //        var uri = new Uri(imageUrl);
+        //        var segments = uri.Segments;
+        //        var filename = segments.LastOrDefault()?.Split('.').FirstOrDefault();
+        //        return string.IsNullOrWhiteSpace(filename) ? null : filename;
+        //    }
+        //    catch
+        //    {
+        //        return null;
+        //    }
+        //}
+
     }
 }

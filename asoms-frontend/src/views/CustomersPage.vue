@@ -338,7 +338,7 @@
                   </button>
                 </div>
 
-                <div class="sort-options-container">
+                <!-- <div class="sort-options-container">
                   <select
                     v-model="sortBy"
                     @change="loadCustomers(1)"
@@ -351,7 +351,7 @@
                     <option value="orders-desc">Most Orders</option>
                     <option value="orders-asc">Least Orders</option>
                   </select>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -553,7 +553,7 @@
                           <i class="fas fa-edit"></i>
                         </button>
 
-                        <div class="dropdown-menu-container">
+                        <!-- <div class="dropdown-menu-container">
                           <button
                             class="action-button-small more-actions"
                             title="More Actions"
@@ -569,7 +569,7 @@
                               <i class="fas fa-history"></i>
                               Order History
                             </a>
-                            <!-- <a
+                            <a
                               href="#"
                               class="dropdown-menu-item"
                               @click.prevent="sendEmail(customer)"
@@ -577,14 +577,14 @@
                               <i class="fas fa-envelope"></i>
                               Send Email
                             </a> -->
-                            <!-- <a
+                        <!-- <a
                               href="#"
                               class="dropdown-menu-item"
                               @click.prevent="resetPassword(customer)"
                             >
                               <i class="fas fa-key"></i>
                               Reset Password
-                            </a> -->
+                            </a> 
                             <div class="dropdown-divider"></div>
                             <a
                               href="#"
@@ -595,7 +595,7 @@
                               Delete Customer
                             </a>
                           </div>
-                        </div>
+                        </div> -->
                       </div>
                     </td>
                   </tr>
@@ -1424,8 +1424,8 @@ export default {
     const newCustomersCount = ref(0);
     const avgOrdersPerCustomer = ref("0");
 
-    const API_BASE = "https://asoms-production.up.railway.app";
-    // const API_BASE = "https://localhost:7004";
+    // const API_BASE = "https://asoms-production.up.railway.app";
+    const API_BASE = "https://localhost:7004";
 
     const filters = ref({
       role: "",

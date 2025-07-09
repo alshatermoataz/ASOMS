@@ -78,19 +78,28 @@ public class UsersController(CustomDbContext customDbContext, IHubContext<Notifi
             switch (registered.ToLower())
             {
                 case "today":
-                    query = query.Where(u => u.CreatedAt.Date == now.Date);
+                    var startOfDay = now.Date;
+                    var endOfDay = startOfDay.AddDays(1);
+                    query = query.Where(u => u.CreatedAt >= startOfDay && u.CreatedAt < endOfDay);
                     break;
+
                 case "week":
                     var startOfWeek = now.Date.AddDays(-(int)now.DayOfWeek);
-                    query = query.Where(u => u.CreatedAt >= startOfWeek);
+                    startOfWeek = DateTime.SpecifyKind(startOfWeek, DateTimeKind.Utc);
+                    var endOfWeek = startOfWeek.AddDays(7);
+                    query = query.Where(u => u.CreatedAt >= startOfWeek && u.CreatedAt < endOfWeek);
                     break;
+
                 case "month":
-                    var startOfMonth = new DateTime(now.Year, now.Month, 1);
-                    query = query.Where(u => u.CreatedAt >= startOfMonth);
+                    var startOfMonth = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1), DateTimeKind.Utc);
+                    var endOfMonth = startOfMonth.AddMonths(1);
+                    query = query.Where(u => u.CreatedAt >= startOfMonth && u.CreatedAt < endOfMonth);
                     break;
+
                 case "year":
-                    var startOfYear = new DateTime(now.Year, 1, 1);
-                    query = query.Where(u => u.CreatedAt >= startOfYear);
+                    var startOfYear = DateTime.SpecifyKind(new DateTime(now.Year, 1, 1), DateTimeKind.Utc);
+                    var endOfYear = startOfYear.AddYears(1);
+                    query = query.Where(u => u.CreatedAt >= startOfYear && u.CreatedAt < endOfYear);
                     break;
             }
         }
