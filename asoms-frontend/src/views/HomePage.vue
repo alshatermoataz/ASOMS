@@ -111,14 +111,14 @@
               <div class="availability-section">
                 <div
                   class="availability-indicator"
-                  :class="getAvailabilityClass(product.quantity)"
+                  :class="getAvailabilityClass(product.availableQuantity)"
                 >
                   <font-awesome-icon
-                    :icon="getAvailabilityIcon(product.quantity)"
+                    :icon="getAvailabilityIcon(product.availableQuantity)"
                   />
                 </div>
                 <span class="availability-text"
-                  >{{ product.quantity }} in stock</span
+                  >{{ product.availableQuantity }} in stock</span
                 >
               </div>
               <button class="quick-view-btn">
