@@ -109,7 +109,7 @@
         </form>
 
         <!-- Social Login -->
-        <div class="social-section">
+        <!-- <div class="social-section">
           <div class="divider">
             <span>or continue with</span>
           </div>
@@ -124,7 +124,7 @@
               Facebook
             </button>
           </div>
-        </div>
+        </div> -->
 
         <!-- Sign Up Link -->
         <div class="signup-section">

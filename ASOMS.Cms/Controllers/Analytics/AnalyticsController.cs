@@ -1,6 +1,7 @@
 ﻿using ASOMS.DAL.EntityFramework;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace ASOMS.Cms.Controllers.Analytics
 {
@@ -121,15 +122,25 @@ namespace ASOMS.Cms.Controllers.Analytics
 
             var topProducts = await customDbContext.OrderItems
                 .Where(oi => oi.Order.CreatedAt >= startDate)
-                .GroupBy(oi => new { oi.ProductId, oi.Product.Name, oi.Product.Category, oi.Product.ImageUrl })
+                .GroupBy(oi => new
+                {
+                    oi.ProductId,
+                    oi.Product.Name,
+                    oi.Product.Category,
+                    oi.Product.ImageUrl,
+                    oi.Product.Price,
+                    oi.Product.Quantity
+                })
                 .Select(g => new
                 {
                     id = g.Key.ProductId,
                     name = g.Key.Name,
                     category = g.Key.Category,
                     image = g.Key.ImageUrl,
-                    sales = g.Sum(oi => oi.Price * oi.Quantity),
-                    units = g.Sum(oi => oi.Quantity)
+                    price = g.Key.Price,           // 🆕 Current unit price of the product
+                    availableQuantity = g.Key.Quantity, // 🆕 Current stock available
+                    sales = g.Sum(oi => oi.Price * oi.Quantity), // Total revenue generated
+                    units = g.Sum(oi => oi.Quantity) // Total units sold
                 })
                 .OrderByDescending(p => p.sales)
                 .Take(5)
@@ -137,6 +148,7 @@ namespace ASOMS.Cms.Controllers.Analytics
 
             return Ok(topProducts);
         }
+
 
         [HttpGet("category-sales")]
         public async Task<IActionResult> GetCategorySales([FromQuery] string period = "30d")
