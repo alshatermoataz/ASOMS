@@ -350,6 +350,8 @@ const handleSignup = async () => {
   loading.value = true;
 
   try {
+    console.log("Sending signup request...");
+
     const response = await axios.post(
       "https://asoms-production.up.railway.app/api/auth/register",
       {
@@ -361,7 +363,23 @@ const handleSignup = async () => {
       }
     );
 
-    const { token, user } = response.data;
+    console.log("API Response:", response.data);
+
+    // Handle the actual API response structure
+    const { token, userId, email: userEmail, role } = response.data;
+
+    // Create user object from the response data
+    const user = {
+      id: userId,
+      userId: userId, // Some parts of the app might expect userId
+      email: userEmail,
+      fullName: fullName.value, // Use the form data since API doesn't return it
+      contactNumber: phone.value, // Use the form data since API doesn't return it
+      role: role,
+    };
+
+    console.log("Logging in user:", user);
+
     auth.login(user, token);
 
     // Add success animation before redirect
@@ -369,8 +387,13 @@ const handleSignup = async () => {
       router.push("/home");
     }, 500);
   } catch (err) {
+    console.error("Signup error:", err);
+    console.error("Error response:", err.response?.data);
+
     error.value =
-      err.response?.data?.message || "Signup failed. Please check your input.";
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      "Signup failed. Please check your input.";
   } finally {
     loading.value = false;
   }
