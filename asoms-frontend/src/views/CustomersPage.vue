@@ -1425,6 +1425,7 @@ export default {
     const avgOrdersPerCustomer = ref("0");
 
     const API_BASE = "https://asoms-production.up.railway.app";
+    // const API_BASE = "https://localhost:7004";
 
     const filters = ref({
       role: "",

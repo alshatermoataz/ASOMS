@@ -29,7 +29,7 @@
     </div>
 
     <!-- Empty Cart State -->
-    <div v-else-if="!cartItems.length" class="empty-cart-container">
+    <div v-else-if="!validatedCartItems.length" class="empty-cart-container">
       <div class="empty-cart-icon">
         <font-awesome-icon icon="shopping-cart" />
       </div>
@@ -46,11 +46,11 @@
           <div class="section-icon-wrapper">
             <font-awesome-icon icon="shopping-cart" class="section-icon" />
           </div>
-          Order Items ({{ cartItems.length }})
+          Order Items ({{ validatedCartItems.length }})
         </h3>
         <div class="order-items">
           <div
-            v-for="(item, index) in cartItems"
+            v-for="(item, index) in validatedCartItems"
             :key="index"
             class="order-item"
             :data-aos-delay="150 + index * 50"
@@ -68,7 +68,6 @@
               <div class="item-price">
                 <p>RM {{ formatPrice(item.price) }}</p>
               </div>
-
               <!-- Quantity Controls -->
               <div class="quantity-controls">
                 <button
@@ -120,7 +119,6 @@
               placeholder="Your full name"
             />
           </div>
-
           <div class="form-group">
             <label for="pickupPhone">Phone Number</label>
             <div class="phone-input-container">
@@ -137,7 +135,6 @@
               />
             </div>
           </div>
-
           <div class="form-group">
             <label for="pickupDate">Pickup Date</label>
             <input
@@ -148,7 +145,6 @@
               :min="minPickupDate"
             />
           </div>
-
           <div class="form-group">
             <label for="pickupTime">Pickup Time</label>
             <select
@@ -162,7 +158,6 @@
               </option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="pickupNotes">Special Instructions (Optional)</label>
             <textarea
@@ -205,7 +200,6 @@
                 </div>
               </div>
             </div>
-
             <div
               class="payment-option"
               :class="{ selected: paymentMethod === 'invoice' }"
@@ -342,6 +336,7 @@ const termsAccepted = ref(false);
 const showConfirmModal = ref(false);
 const itemToRemove = ref(null);
 const productQuantityMap = ref({}); // Cache product quantity info
+
 const paymentMethod = ref("cash"); // Default payment method
 
 // Pickup information
@@ -375,14 +370,16 @@ const pickupTimes = ref([
   "06:00 PM",
 ]);
 
-// Computed properties
-const cartItems = computed(() => {
+// Validated cart items - ensures cart belongs to current user
+const validatedCartItems = computed(() => {
+  // Validate cart user before returning items
+  cartStore.validateCartUser();
+
   return cartStore.items.map((item) => {
     const product = productStore.getProductById(item.id);
     const availableQuantity = product
       ? product.quantity
       : productQuantityMap.value[item.id] || 10;
-
     return {
       ...item,
       availableQuantity,
@@ -391,7 +388,7 @@ const cartItems = computed(() => {
 });
 
 const subtotal = computed(() => {
-  return cartItems.value.reduce(
+  return validatedCartItems.value.reduce(
     (total, item) => total + item.price * item.quantity,
     0
   );
@@ -419,7 +416,7 @@ const canPlaceOrder = computed(() => {
     pickupInfo.value.date &&
     pickupInfo.value.time &&
     paymentMethod.value &&
-    cartItems.value.length > 0 &&
+    validatedCartItems.value.length > 0 &&
     termsAccepted.value
   );
 });
@@ -433,12 +430,13 @@ const minPickupDate = computed(() => {
 const initCheckout = async () => {
   loading.value = true;
   error.value = false;
-
   try {
+    // Validate cart for current user first
+    cartStore.validateCartUser();
+
     // Pre-fill pickup info with user data if available
     if (auth.isLoggedIn && auth.user) {
       pickupInfo.value.name = auth.user.fullName || "";
-
       // Handle phone number - strip country code if present
       if (auth.user.contactNumber) {
         const phoneNumber = auth.user.contactNumber;
@@ -490,12 +488,10 @@ const selectPaymentMethod = (method) => {
 const increaseQuantity = (item) => {
   // Get the available quantity directly from the product store
   const availableQuantity = productStore.getAvailableQuantity(item.id);
-
   if (availableQuantity === 0) {
     showToastMessage("This item is out of stock", "exclamation-circle");
     return;
   }
-
   if (item.quantity < availableQuantity) {
     cartStore.updateQuantity(item.id, item.quantity + 1, item.size);
     showToastMessage("Quantity updated", "check-circle");
@@ -535,20 +531,18 @@ const cancelRemove = () => {
 
 const placeOrder = async () => {
   if (!canPlaceOrder.value) return;
-
   processingOrder.value = true;
   console.log("PickUpDate: ", pickupInfo.value.time);
   try {
     // Combine selected date and selected time
     const fullPickupDateTime = `${pickupInfo.value.date} ${pickupInfo.value.time}`;
     // Example: "2024-06-10 01:00 PM"
-
     const orderDto = {
       userId: auth.user?.id,
       paymentMethod: paymentMethod.value, // e.g., "Cash" or "Invoice"
       notesToSeller: pickupInfo.value.notes || "", // from buyer
       pickupTime: fullPickupDateTime, // ensure it's an ISO string
-      items: cartItems.value.map((item) => ({
+      items: validatedCartItems.value.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
       })),
@@ -569,10 +563,11 @@ const placeOrder = async () => {
 
     // Clear the cart
     cartStore.clearCart();
+    // Save the empty cart state
+    cartStore.saveCart();
 
     // Success
     showToastMessage("Order placed successfully!", "check-circle");
-
     setTimeout(() => {
       router.push(`/history`);
     }, 1500);
@@ -591,7 +586,6 @@ const showToastMessage = (message, icon = "check-circle") => {
   toastMessage.value = message;
   toastIcon.value = icon;
   showToast.value = true;
-
   // Hide toast after 3 seconds
   setTimeout(() => {
     showToast.value = false;
@@ -614,13 +608,17 @@ const goToShop = () => {
   router.push("/shop");
 };
 
-// Watch for auth changes to update pickup info
+// Watch for auth changes to update pickup info and validate cart
 watch(
   () => auth.user,
-  (newUser) => {
+  (newUser, oldUser) => {
+    console.log("Auth user changed in checkout:", {
+      newUser: newUser?.id,
+      oldUser: oldUser?.id,
+    });
+
     if (newUser) {
       pickupInfo.value.name = newUser.fullName || pickupInfo.value.name;
-
       // Handle phone number - strip country code if present
       if (newUser.contactNumber) {
         const phoneNumber = newUser.contactNumber;
@@ -631,8 +629,24 @@ watch(
         }
       }
     }
+
+    // Validate cart when user changes
+    cartStore.validateCartUser();
   },
   { immediate: true }
+);
+
+// Watch for auth status changes
+watch(
+  () => auth.isLoggedIn,
+  (isLoggedIn) => {
+    console.log("Auth status changed in checkout:", isLoggedIn);
+    if (!isLoggedIn) {
+      // User logged out, clear pickup info
+      pickupInfo.value.name = "";
+      pickupInfo.value.phoneNumber = "";
+    }
+  }
 );
 
 // Lifecycle hooks
@@ -1605,17 +1619,14 @@ select.form-input option {
     margin-bottom: 20px;
     padding: 15px;
   }
-
   .payment-option {
     padding: 15px;
   }
-
   .payment-icon {
     width: 40px;
     height: 40px;
     font-size: 18px;
   }
-
   .place-order-btn {
     padding: 15px;
     font-size: 15px;

@@ -18,7 +18,6 @@ import { useAuthStore } from '../stores/auth'
 import ProfilePage from '../views/ProfilePage.vue'
 import ForgotPassword from '../views/ForgotPasswordPage.vue'
 
-
 const routes = [
   {
     path: '/',
@@ -38,72 +37,86 @@ const routes = [
   {
     path: '/home',
     name: 'Home',
-    component: HomePage
+    component: HomePage,
+    meta: { requiresAuth: true, role: 'user' }
   },
   {
     path: '/shop',
     name: 'Shop',
-    component: ShopPage
+    component: ShopPage,
+    meta: { requiresAuth: true, role: 'user' }
   },
   {
     path: '/history',
     name: 'History',
-    component: HistoryPage
+    component: HistoryPage,
+    meta: { requiresAuth: true, role: 'user' }
   },
   {
     path: '/product/:id',
     name: 'ProductDetail',
-    component: ProductDetailPage
+    component: ProductDetailPage,
+    meta: { requiresAuth: true, role: 'user' }
   },
   {
     path: '/checkout',
     name: 'Checkout',
-    component: CheckoutPage
+    component: CheckoutPage,
+    meta: { requiresAuth: true, role: 'user' }
   },
   {
     path: '/update',
     name: 'Update',
-    component: UpdatePage
-  },
-  {
-    path: '/admin/check',
-    name: 'Check',
-    component: CheckPage
-  },
-  {
-    path: '/admin/orders',
-    name: 'Orders',
-    component: OrdersPage
-  },
-  {
-    path: '/admin/customers',
-    name: 'Customers',
-    component: CustomersPage
-  },
-  {
-    path: '/admin/products',
-    name: 'Products',
-    component: ProductsPage
-  },
-  {
-    path: '/admin/analytics',
-    name: 'analytics',
-    component: AnalyticsPage
-  },
-  {
-    path: '/admin/settings',
-    name: 'settings',
-    component: SettingsPage
+    component: UpdatePage,
+    meta: { requiresAuth: true, role: 'user' }
   },
   {
     path: '/profile',
     name: 'Profile',
-    component: ProfilePage
+    component: ProfilePage,
+    meta: { requiresAuth: true, role: 'user' }
   },
   {
     path: '/forgotpassword',
     name: 'forgotpassword',
     component: ForgotPassword
+  },
+  // Admin routes
+  {
+    path: '/admin/check',
+    name: 'Check',
+    component: CheckPage,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/orders',
+    name: 'Orders',
+    component: OrdersPage,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/customers',
+    name: 'Customers',
+    component: CustomersPage,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/products',
+    name: 'Products',
+    component: ProductsPage,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/analytics',
+    name: 'analytics',
+    component: AnalyticsPage,
+    meta: { requiresAuth: true, role: 'admin' }
+  },
+  {
+    path: '/admin/settings',
+    name: 'settings',
+    component: SettingsPage,
+    meta: { requiresAuth: true, role: 'admin' }
   }
 ]
 
@@ -114,17 +127,35 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
-
-  // Public routes that don’t require login
-  const publicPages = ['Splash', 'Login', 'Signup']
+  
+  // Public routes that don't require login
+  const publicPages = ['Splash', 'Login', 'Signup', 'forgotpassword']
   const authRequired = !publicPages.includes(to.name)
-
+  
+  // Check if authentication is required
   if (authRequired && !auth.token) {
     return next('/login')
   }
-
+  
+  // Role-based access control
+  if (to.meta.requiresAuth && auth.token) {
+    const userRole = auth.user?.role?.toLowerCase()
+    const requiredRole = to.meta.role?.toLowerCase()
+    
+    // If route requires admin role but user is not admin
+    if (requiredRole === 'admin' && userRole !== 'admin') {
+      // Redirect non-admin users trying to access admin routes
+      return next('/home')
+    }
+    
+    // If route requires user role but user is admin, allow access
+    // (Admins can access user routes)
+    if (requiredRole === 'user' && userRole === 'admin') {
+      return next()
+    }
+  }
+  
   next()
 })
-
 
 export default router

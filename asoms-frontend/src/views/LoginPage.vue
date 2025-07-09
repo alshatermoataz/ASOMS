@@ -109,7 +109,7 @@
         </form>
 
         <!-- Social Login -->
-        <!-- <div class="social-section">
+        <div class="social-section">
           <div class="divider">
             <span>or continue with</span>
           </div>
@@ -124,7 +124,7 @@
               Facebook
             </button>
           </div>
-        </div> -->
+        </div>
 
         <!-- Sign Up Link -->
         <div class="signup-section">
@@ -173,7 +173,12 @@ const handleLogin = async () => {
 
     // Add success animation before redirect
     setTimeout(() => {
-      router.push("/home");
+      // Role-based routing
+      if (user.role === "Admin" || user.role === "admin") {
+        router.push("/admin/analytics");
+      } else {
+        router.push("/home");
+      }
     }, 500);
   } catch (err) {
     error.value =
