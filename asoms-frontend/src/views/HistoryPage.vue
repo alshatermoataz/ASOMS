@@ -101,7 +101,7 @@
               >
                 <div class="item-image">
                   <img
-                    :src="`https://asoms-production.up.railway.app${item.productImage}`"
+                    :src="imageBase(`${item.productImage}`)"
                     :alt="item.productName"
                     @error="handleImageError($event)"
                   />
@@ -271,6 +271,11 @@ const getStatusClass = (status) => {
 const handleImageError = (event) => {
   event.target.src = "/images/product-placeholder.png";
 };
+
+const imageBase = (url) =>
+  url?.startsWith("http")
+    ? url
+    : `https://asoms-production.up.railway.app${url}`;
 
 // Show toast message
 const showToastMessage = (message, icon = "info-circle") => {
