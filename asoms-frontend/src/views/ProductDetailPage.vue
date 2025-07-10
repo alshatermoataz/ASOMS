@@ -34,7 +34,7 @@
       <div class="product-image-gallery">
         <div class="main-image-container">
           <img
-            :src="fullImageUrl"
+            :src="imageBase(fullImageUrl)"
             :alt="product.name"
             class="product-detail-image"
             @error="handleImageError"
@@ -52,7 +52,7 @@
             @click="selectImage(index)"
           >
             <img
-              :src="image"
+              :src="imageBase(image)"
               :alt="`${product.name} view ${index + 1}`"
               class="thumbnail-image"
             />
@@ -169,7 +169,7 @@
         >
           <div class="related-product-image">
             <img
-              :src="`https://asoms-production.up.railway.app${relatedProduct.imageUrl}`"
+              :src="imageBase(`${relatedProduct.imageUrl}`)"
               :alt="relatedProduct.name"
             />
           </div>
@@ -279,6 +279,11 @@ const productImages = computed(() => {
   return [`https://asoms-production.up.railway.app${product.value.imageUrl}`];
 });
 
+const imageBase = (url) =>
+  url?.startsWith("http")
+    ? url
+    : `https://asoms-production.up.railway.app${url}`;
+
 // Methods
 const fetchProduct = async () => {
   loading.value = true;
@@ -294,7 +299,7 @@ const fetchProduct = async () => {
     product.value = response.data;
 
     // Set the full image URL
-    fullImageUrl.value = `https://asoms-production.up.railway.app${response.data.imageUrl}`;
+    fullImageUrl.value = `${response.data.imageUrl}`;
 
     // If product has sizes, select the first one by default
     if (hasSizes.value) {
