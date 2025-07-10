@@ -88,7 +88,7 @@
               <span class="checkmark"></span>
               Remember me
             </label>
-            <a href="#" class="forgot-password">Forgot Password?</a>
+            <!-- <a href="#" class="forgot-password">Forgot Password?</a> -->
           </div>
 
           <div v-if="error" class="error-message">
